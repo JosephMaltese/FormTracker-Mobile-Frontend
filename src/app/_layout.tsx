@@ -1,18 +1,45 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { useColorScheme } from 'react-native';
+import AuthProvider, { useAuthSession } from "@/providers/AuthProvider";
+import { Stack, Redirect } from "expo-router";
+import { ActivityIndicator, View } from "react-native";
+import { ReactNode } from "react";
+import { Slot } from "expo-router";
 
-import { AnimatedSplashOverlay } from '@/components/animated-icon';
-import AppTabs from '@/components/app-tabs';
+export default function RootLayout(): ReactNode {
+    return (
+        <AuthProvider>
+            <RootNav />
+        </AuthProvider>
+    );
+}
 
-SplashScreen.preventAutoHideAsync();
+function RootNav(): ReactNode {
+    const { token, isLoading } = useAuthSession();
+    console.log('RootLayoutContent: token=', token, 'isLoading=', isLoading);
 
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
-  return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <AnimatedSplashOverlay />
-      <AppTabs />
-    </ThemeProvider>
-  );
+    if (isLoading) {
+        return (
+            <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+                <ActivityIndicator size="large" />
+            </View>
+        );
+    };
+
+    return (
+        <Stack
+            screenOptions={{
+                headerShown: false,
+                animation: "none",
+            }}
+        >
+            <Stack.Protected guard={!token}>
+                <Stack.Screen name="index"></Stack.Screen>
+                <Stack.Screen name="login"></Stack.Screen>
+            </Stack.Protected>
+
+            <Stack.Protected guard={!!token}>
+                <Stack.Screen name="(authorized)" />
+            </Stack.Protected>
+
+        </Stack>
+    );
 }

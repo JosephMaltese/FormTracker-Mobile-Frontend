@@ -1,13 +1,19 @@
 import {ReactNode} from "react";
-import Uuid from "expo-modules-core/src/uuid";
 import {useAuthSession} from "@/providers/AuthProvider";
 import {View, Button, Text} from "react-native";
+import {router} from "expo-router";
 
 export default function Login(): ReactNode {
-    const {signIn} = useAuthSession();
-    const login = ():void => {
-        const random: string = Uuid.v4();
-        signIn(random);
+    const {loginUser} = useAuthSession();
+    const login = async (): Promise<void> => {
+        const result = await loginUser('honeybun@gmail.com', 'honeybun');
+
+        if (result.success) {
+            console.log("Login successful:", result.data);
+            router.replace('/(authorized)');
+        } else {
+            console.error("Login failed:", result.error);
+        }
     }
 
     return (

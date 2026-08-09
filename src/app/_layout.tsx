@@ -13,16 +13,7 @@ export default function RootLayout(): ReactNode {
 }
 
 function RootNav(): ReactNode {
-    const { token, isLoading } = useAuthSession();
-    console.log('RootLayoutContent: token=', token, 'isLoading=', isLoading);
-
-    if (isLoading) {
-        return (
-            <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-                <ActivityIndicator size="large" />
-            </View>
-        );
-    };
+    const { session } = useAuthSession();
 
     return (
         <Stack
@@ -31,15 +22,14 @@ function RootNav(): ReactNode {
                 animation: "none",
             }}
         >
-            <Stack.Protected guard={!token}>
+            <Stack.Protected guard={!session}>
                 <Stack.Screen name="index"></Stack.Screen>
                 <Stack.Screen name="login"></Stack.Screen>
             </Stack.Protected>
 
-            <Stack.Protected guard={!!token}>
+            <Stack.Protected guard={!!session}>
                 <Stack.Screen name="(authorized)" />
             </Stack.Protected>
-
         </Stack>
     );
 }

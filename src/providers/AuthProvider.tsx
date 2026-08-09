@@ -1,25 +1,26 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import supabase, { Session, AuthChangeEvent } from "@/lib/subabaseClient";
 import {router} from "expo-router";
 import {
     createContext,
     ReactNode,
     useCallback,
     useContext,
-    useEffect, useRef,
+    useEffect,
     useMemo,
     useState
 } from 'react';
 
 const AuthContext = createContext<{
-    signIn: (arg0: string) => void;
+    session: Session | undefined;
+    signUpNewUser: (arg0: string, arg1: string) => Promise<{ success: boolean; data?: any; error?: string }>;
     signOut: () => void;
-    token: string | null;
-    isLoading: boolean;
+    loginUser: (arg0: string, arg1: string) => Promise<{ success: boolean; data?: any; error?: string }>;
+
 }>({
-    signIn: () => null,
-    signOut: () => null,
-    token: null,
-    isLoading: true
+    session: undefined,
+    signUpNewUser: () => Promise.resolve({ success: false, error: "Not implemented" }),
+    signOut: () => Promise.resolve(undefined),
+    loginUser: () => Promise.resolve({ success: false, error: "Not implemented" })
 })
 
 // Access the context as a hook
@@ -28,49 +29,67 @@ export function useAuthSession() {
 }
 
 export default function AuthProvider ({children}:{children: ReactNode}): ReactNode {
-    const [token, setToken] = useState<string | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const isInitializedRef = useRef(false);
+    const [session, setSession] = useState<Session | undefined>(undefined);
 
     useEffect(() => {
-        if (isInitializedRef.current) return;
-        isInitializedRef.current = true;
-        console.log('AuthProvider: Starting token restore');
-        (async ():Promise<void> => {
-            try {
-                console.log('AuthProvider: Getting token from AsyncStorage');
-                const storedToken = await AsyncStorage.getItem('@token');
-                console.log('AuthProvider: Got token:', storedToken ? 'exists' : 'null');
-                setToken((storedToken && storedToken.length > 0) ? storedToken : null);
-                console.log('AuthProvider: Token state set');
-            } catch (e) {
-                console.error('AuthProvider: Token restore failed:', e);
-                setToken(null);
-            } finally {
-                console.log('AuthProvider: Setting isLoading to false');
-                setIsLoading(false);
-            }
-        })()
+        supabase.auth.getSession().then(({data}: { data: { session: Session | null } }) => {
+            setSession(data.session);
+        });
+
+        supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session: Session) => {
+            setSession(session);
+        })
     }, []);
 
-    const signIn = useCallback(async (token: string) => {
-        await AsyncStorage.setItem('@token', token);
-        setToken(token);
-        router.replace('/(authorized)');
+    const loginUser = useCallback(async (email: string, password: string): Promise<{ success: boolean; data?: any; error?: string }> => {
+        try {
+            const  { data, error } = await supabase.auth.signInWithPassword({
+                email: email,
+                password: password
+            });
+
+            if (error) {
+                console.error("Sign-in error occurred: ", error);
+                return { success: false, error: error.message };
+            }
+            console.log("Sign-in success", data);
+            return { success: true, data };
+        }
+        catch (error: any) {
+            console.error("Sign-in error occurred:", error);
+            return { success: false, error: error.message }
+        }
     }, []);
+
+    // Signup
+    const signUpNewUser = async (email: string, password: string): Promise<{ success: boolean; data?: any; error?: string }> => {
+        const {data, error} = await supabase.auth.signUp({
+            email: email,
+            password: password
+        });
+
+        if (error) {
+            console.error("There was a problem signing up: ", error);
+            return { success: false, error };
+        }
+        return { success: true, data };
+    }
 
     const signOut = useCallback(async () => {
-        await AsyncStorage.setItem('@token', '');
-        setToken(null);
+        const { error } = supabase.auth.signOut();
+
+        if (error) {
+            console.error("There was an error: ", error);
+        }
         router.replace('/');
     }, []);
 
     const value = useMemo(() => ({
-        signIn,
+        session,
+        signUpNewUser,
         signOut,
-        token,
-        isLoading
-    }), [token, isLoading, signIn, signOut]);
+        loginUser
+    }), [session, signUpNewUser, signOut, loginUser]);
 
     return (
         <AuthContext.Provider value={value}>

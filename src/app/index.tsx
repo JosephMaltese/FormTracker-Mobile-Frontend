@@ -13,7 +13,7 @@ export default function LandingScreen(): ReactNode {
     >
       <Text>FORMTRACKER</Text>
       <Button title={"Login"} onPress={() => router.push('/login')} />
-      <Button title={"Sign Up"} onPress={() => router.push('/login')} />
+      <Button title={"Sign Up"} onPress={() => router.push('/signup')} />
     </View>
   );
 }

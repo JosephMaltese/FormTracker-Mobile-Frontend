@@ -11,13 +11,13 @@ import {
 } from 'react';
 
 const AuthContext = createContext<{
-    session: Session | undefined;
-    signUpNewUser: (arg0: string, arg1: string) => Promise<{ success: boolean; data?: any; error?: string }>;
+    session: Session | null;
+    signUpNewUser: (arg0: string, arg1: string, arg2: string) => Promise<{ success: boolean; data?: any; error?: string }>;
     signOut: () => void;
     loginUser: (arg0: string, arg1: string) => Promise<{ success: boolean; data?: any; error?: string }>;
 
 }>({
-    session: undefined,
+    session: null,
     signUpNewUser: () => Promise.resolve({ success: false, error: "Not implemented" }),
     signOut: () => Promise.resolve(undefined),
     loginUser: () => Promise.resolve({ success: false, error: "Not implemented" })
@@ -29,14 +29,14 @@ export function useAuthSession() {
 }
 
 export default function AuthProvider ({children}:{children: ReactNode}): ReactNode {
-    const [session, setSession] = useState<Session | undefined>(undefined);
+    const [session, setSession] = useState<Session | null>(null);
 
     useEffect(() => {
         supabase.auth.getSession().then(({data}: { data: { session: Session | null } }) => {
             setSession(data.session);
         });
 
-        supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session: Session) => {
+        supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session: Session | null) => {
             setSession(session);
         })
     }, []);
@@ -62,21 +62,26 @@ export default function AuthProvider ({children}:{children: ReactNode}): ReactNo
     }, []);
 
     // Signup
-    const signUpNewUser = async (email: string, password: string): Promise<{ success: boolean; data?: any; error?: string }> => {
+    const signUpNewUser = async (email: string, password: string, displayName: string): Promise<{ success: boolean; data?: any; error?: string }> => {
         const {data, error} = await supabase.auth.signUp({
             email: email,
-            password: password
+            password: password,
+            options: {
+                data: {
+                    display_name: displayName,
+                }
+            }
         });
 
         if (error) {
             console.error("There was a problem signing up: ", error);
-            return { success: false, error };
+            return { success: false, error: error.message };
         }
         return { success: true, data };
     }
 
     const signOut = useCallback(async () => {
-        const { error } = supabase.auth.signOut();
+        const { error } = await supabase.auth.signOut();
 
         if (error) {
             console.error("There was an error: ", error);

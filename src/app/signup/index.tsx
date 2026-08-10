@@ -62,22 +62,26 @@ export default function Signup(): ReactNode {
                     onChangeText={setUsername}
                     value={username}
                     placeholder={"Your name"}
+                    autoCapitalize={"none"}
                 />
                 <TextInput
                     onChangeText={setEmail}
                     value={email}
                     placeholder={"Your Email"}
+                    autoCapitalize={"none"}
                 />
                 <TextInput
                     onChangeText={passwordChangeHandler}
                     value={password}
                     placeholder={"Password"}
+                    autoCapitalize={"none"}
                 />
                 {showStrongPasswordError && <Text>Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character</Text>}
                 <TextInput
                     onChangeText={confirmPasswordChangeHandler}
                     value={confirmPassword}
                     placeholder={"Confirm password"}
+                    autoCapitalize={"none"}
                 />
                 {showPasswordMatchError && <Text>Passwords do not match</Text>}
                 <Button title={"Confirm"} onPress={signup} disabled={!!showStrongPasswordError || !!showPasswordMatchError} />

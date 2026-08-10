@@ -1,7 +1,9 @@
-import {View, Text} from 'react-native';
+import {View, Text, Button} from 'react-native';
 import {ReactNode} from "react";
+import {useAuthSession} from "@/providers/AuthProvider";
 
 export default function ProfileScreen(): ReactNode {
+    const {signOut} = useAuthSession();
     return (
         <View
             style={{
@@ -11,6 +13,7 @@ export default function ProfileScreen(): ReactNode {
             }}
         >
             <Text>Profile</Text>
+            <Button title={"Sign out"} onPress={signOut}/>
         </View>
     );
 }

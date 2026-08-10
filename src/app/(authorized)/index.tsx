@@ -1,9 +1,7 @@
-import {View, Text, Button} from 'react-native';
-import {ReactNode} from "react";
-import {useAuthSession} from "@/providers/AuthProvider";
+import { View, Text } from 'react-native';
+import { ReactNode } from "react";
 
 export default function HomeScreen(): ReactNode {
-    const {signOut} = useAuthSession();
     return (
         <View
             style={{
@@ -13,7 +11,6 @@ export default function HomeScreen(): ReactNode {
             }}
         >
             <Text>YOU ARE LOGGED IN!</Text>
-            <Button title={"Sign out"} onPress={signOut}/>
         </View>
     );
 }

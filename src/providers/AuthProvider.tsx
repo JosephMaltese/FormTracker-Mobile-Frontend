@@ -10,14 +10,17 @@ import {
     useState
 } from 'react';
 
-const AuthContext = createContext<{
+type AuthContextValue = {
     session: Session | null;
+    isLoading: boolean;
     signUpNewUser: (arg0: string, arg1: string, arg2: string) => Promise<{ success: boolean; data?: any; error?: string }>;
     signOut: () => void;
     loginUser: (arg0: string, arg1: string) => Promise<{ success: boolean; data?: any; error?: string }>;
+}
 
-}>({
+const AuthContext = createContext<AuthContextValue>({
     session: null,
+    isLoading: true,
     signUpNewUser: () => Promise.resolve({ success: false, error: "Not implemented" }),
     signOut: () => Promise.resolve(undefined),
     loginUser: () => Promise.resolve({ success: false, error: "Not implemented" })
@@ -30,15 +33,37 @@ export function useAuthSession() {
 
 export default function AuthProvider ({children}:{children: ReactNode}): ReactNode {
     const [session, setSession] = useState<Session | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
+        let mounted = true;
         supabase.auth.getSession().then(({data}: { data: { session: Session | null } }) => {
+            if (!mounted) return;
+
+            console.log('CHECKING FOR EXISTING SESSION');
             setSession(data.session);
+            setIsLoading(false);
+            if (data.session !== null) {
+                console.log('SESSION FOUND');
+                router.replace('/(authorized)');
+            } else {
+                console.log('NO SESSION FOUND');
+            }
         });
 
-        supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session: Session | null) => {
-            setSession(session);
-        })
+        const {
+            data: { subscription },
+        } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+            if (!mounted) return;
+
+            setSession(nextSession);
+            setIsLoading(false);
+        });
+
+        return () => {
+            mounted = false;
+            subscription.unsubscribe();
+        };
     }, []);
 
     const loginUser = useCallback(async (email: string, password: string): Promise<{ success: boolean; data?: any; error?: string }> => {
@@ -91,10 +116,11 @@ export default function AuthProvider ({children}:{children: ReactNode}): ReactNo
 
     const value = useMemo(() => ({
         session,
+        isLoading,
         signUpNewUser,
         signOut,
         loginUser
-    }), [session, signUpNewUser, signOut, loginUser]);
+    }), [session, signUpNewUser, signOut, loginUser, isLoading]);
 
     return (
         <AuthContext.Provider value={value}>

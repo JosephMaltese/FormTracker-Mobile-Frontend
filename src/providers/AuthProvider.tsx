@@ -9,6 +9,7 @@ import {
     useMemo,
     useState
 } from 'react';
+import {User} from "@supabase/supabase-js";
 
 type AuthContextValue = {
     session: Session | null;
@@ -16,6 +17,7 @@ type AuthContextValue = {
     signUpNewUser: (arg0: string, arg1: string, arg2: string) => Promise<{ success: boolean; data?: any; error?: string }>;
     signOut: () => void;
     loginUser: (arg0: string, arg1: string) => Promise<{ success: boolean; data?: any; error?: string }>;
+    getUser: () => Promise<User | null>;
 }
 
 const AuthContext = createContext<AuthContextValue>({
@@ -23,7 +25,8 @@ const AuthContext = createContext<AuthContextValue>({
     isLoading: true,
     signUpNewUser: () => Promise.resolve({ success: false, error: "Not implemented" }),
     signOut: () => Promise.resolve(undefined),
-    loginUser: () => Promise.resolve({ success: false, error: "Not implemented" })
+    loginUser: () => Promise.resolve({ success: false, error: "Not implemented" }),
+    getUser: () => Promise.resolve(null)
 })
 
 // Access the context as a hook
@@ -114,12 +117,27 @@ export default function AuthProvider ({children}:{children: ReactNode}): ReactNo
         router.replace('/');
     }, []);
 
+    const getUser = useCallback(async () => {
+        try {
+            const { data: { user }, error } = await supabase.auth.getUser();
+
+            if (error) {
+                console.error("There was an error while fetching current user: ", error);
+            }
+            return user;
+        } catch (err) {
+            console.log('Failed to get current user:', err);
+            return null;
+        }
+    }, []);
+
     const value = useMemo(() => ({
         session,
         isLoading,
         signUpNewUser,
         signOut,
-        loginUser
+        loginUser,
+        getUser
     }), [session, signUpNewUser, signOut, loginUser, isLoading]);
 
     return (

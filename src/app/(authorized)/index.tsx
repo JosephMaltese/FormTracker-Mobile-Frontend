@@ -1,16 +1,69 @@
-import { View, Text } from 'react-native';
-import { ReactNode } from "react";
+import { View, Text, StyleSheet } from 'react-native';
+import {ReactNode, useEffect, useState} from "react";
+import {SafeAreaProvider, SafeAreaView} from "react-native-safe-area-context";
+import {useAuthSession} from "@/providers/AuthProvider";
+import {User} from "@supabase/supabase-js";
+import Octicons from '@expo/vector-icons/Octicons';
 
 export default function HomeScreen(): ReactNode {
+    const { getUser } = useAuthSession();
+    const [user, setUser] = useState<User | null>(null);
+
+    useEffect(() => {
+        const populateUserData = async () => {
+            try {
+                const response = await getUser();
+                setUser(response);
+                console.log("USER OBTAINED:", response);
+            } catch (err) {
+                console.error(err);
+            }
+        };
+
+        populateUserData();
+    }, []);
     return (
-        <View
-            style={{
-                flex: 1,
-                justifyContent: 'center',
-                alignItems: 'center',
-            }}
-        >
-            <Text>YOU ARE LOGGED IN!</Text>
-        </View>
+        <SafeAreaProvider>
+            <SafeAreaView>
+                <View style={styles.heroContainer}>
+                    <View>
+                        {user !== null ?
+                            <Text style={styles.heroPrimaryText}>Hey, {user.user_metadata.display_name}!</Text>
+                            : <Text style={styles.heroPrimaryText}>Welcome back!</Text>
+                        }
+                        <Text style={styles.heroSecondaryText}>Ready to perfect your form today?</Text>
+                    </View>
+                    <Octicons name="bell" size={24} color="black" style={styles.bellIcon}/>
+
+                </View>
+            </SafeAreaView>
+        </SafeAreaProvider>
     );
 }
+
+const styles = StyleSheet.create({
+    heroContainer: {
+        display: "flex",
+        flexDirection: "row",
+        marginHorizontal: "10%",
+        marginTop: 15,
+        justifyContent: "space-between",
+    },
+    heroPrimaryText: {
+        fontSize: 20,
+        fontWeight: "bold",
+    },
+    heroSecondaryText: {
+        fontSize: 15,
+        fontWeight: "light",
+    },
+    bellIcon: {
+        margin: "auto",
+        borderColor: "grey",
+        borderStyle: "solid",
+        padding: 4,
+        borderWidth: 1.5,
+        borderRadius: 10,
+        backgroundColor: "white",
+    }
+});

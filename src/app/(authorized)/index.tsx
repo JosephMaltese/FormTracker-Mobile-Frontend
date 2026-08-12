@@ -4,7 +4,7 @@ import {SafeAreaProvider, SafeAreaView} from "react-native-safe-area-context";
 import {useAuthSession} from "@/providers/AuthProvider";
 import {User} from "@supabase/supabase-js";
 import Octicons from '@expo/vector-icons/Octicons';
-import MuscleDiagram from "@/components/muscleDiagram";
+import Impl from "@/components/muscleDiagram";
 import ProgressCharts from "@/components/ProgressCharts";
 
 export default function HomeScreen(): ReactNode {
@@ -38,7 +38,7 @@ export default function HomeScreen(): ReactNode {
                     <Octicons name="bell" size={24} color="black" style={styles.bellIcon}/>
 
                 </View>
-                <MuscleDiagram />
+                <Impl />
                 <ProgressCharts />
             </SafeAreaView>
         </SafeAreaProvider>
@@ -47,7 +47,7 @@ export default function HomeScreen(): ReactNode {
 
 const styles = StyleSheet.create({
     page: {
-        marginHorizontal: "10%",
+        marginHorizontal: "5%",
     },
     heroContainer: {
         display: "flex",

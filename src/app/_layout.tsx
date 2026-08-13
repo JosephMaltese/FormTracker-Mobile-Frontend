@@ -1,18 +1,32 @@
 import AuthProvider, { useAuthSession } from "@/providers/AuthProvider";
-import { Stack, Redirect } from "expo-router";
-import { ActivityIndicator, View } from "react-native";
+import { Stack } from "expo-router";
 import { ReactNode } from "react";
-import { Slot } from "expo-router";
+import {
+    DarkTheme,
+    DefaultTheme,
+    ThemeProvider,
+} from "expo-router/react-navigation";
+import { useColorScheme } from "react-native";
+import { appBackgroundColorHexLight} from "@/lib/constants";
 
 export default function RootLayout(): ReactNode {
+    const colorScheme = useColorScheme();
+    const isDark = colorScheme === "dark";
+
     return (
-        <AuthProvider>
-            <RootNav />
-        </AuthProvider>
+        <ThemeProvider value={isDark ? DarkTheme : DefaultTheme }>
+            <AuthProvider>
+                <RootNav backgroundColor={ isDark ? "" : appBackgroundColorHexLight }/>
+            </AuthProvider>
+        </ThemeProvider>
     );
 }
 
-function RootNav(): ReactNode {
+function RootNav({
+    backgroundColor,
+}: {
+    backgroundColor: string;
+}): ReactNode {
     const { session } = useAuthSession();
 
     return (
@@ -20,6 +34,9 @@ function RootNav(): ReactNode {
             screenOptions={{
                 headerShown: false,
                 animation: "none",
+                contentStyle: {
+                    backgroundColor
+                },
             }}
         >
             <Stack.Protected guard={!session}>

@@ -31,6 +31,9 @@ const musclesBothSides = [
 
 const intensityColorsHex = ["#B8B8FF", "#5C5CFF", "#0000FF"];
 
+const appBackgroundColorHexLight = "#FAF9F6" as const;
+const appBackgroundColorHexDark = "#09090B" as const;
+
 const defaultBodyColorHex = "#989898" as const;
 
 export {
@@ -39,4 +42,6 @@ export {
     musclesBothSides,
     intensityColorsHex,
     defaultBodyColorHex,
+    appBackgroundColorHexLight,
+    appBackgroundColorHexDark
 };

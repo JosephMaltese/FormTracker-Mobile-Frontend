@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet } from "react-native";
-import Body from "react-native-body-highlighter";
+import Body, { ExtendedBodyPart } from "react-native-body-highlighter";
 import {
     musclesFrontOnly,
     musclesBackOnly,
@@ -8,7 +8,7 @@ import {
     defaultBodyColorHex,
 } from "@/lib/constants";
 
-export default function MuscleDiagram() {
+export default function MuscleDiagram({ frontMusclesTrained, backMusclesTrained } : { frontMusclesTrained: ExtendedBodyPart[], backMusclesTrained: ExtendedBodyPart[] }) {
     const totalFrontMuscles = [...musclesFrontOnly, ...musclesBothSides];
     const totalBackMuscles = [...musclesBackOnly, ...musclesBothSides];
 
@@ -16,20 +16,8 @@ export default function MuscleDiagram() {
         ...totalFrontMuscles.map((slug) => ({
             slug,
             styles: { fill: defaultBodyColorHex },
-        })),
-        {
-            slug: "chest" as const,
-            side: "left" as const,
-            intensity: 1,
-        },
-        {
-            slug: "biceps" as const,
-            intensity: 2,
-        },
-        {
-            slug: "abs" as const,
-            intensity: 3,
-        },
+        } as ExtendedBodyPart)),
+        ...frontMusclesTrained,
     ];
 
     const backData = [
@@ -37,10 +25,7 @@ export default function MuscleDiagram() {
             slug,
             styles: { fill: defaultBodyColorHex },
         })),
-        {
-            slug: "upper-back" as const,
-            intensity: 2,
-        },
+        ...backMusclesTrained,
     ];
 
     return (

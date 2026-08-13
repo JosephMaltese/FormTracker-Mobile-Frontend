@@ -1,15 +1,38 @@
 import { View, Text, StyleSheet } from 'react-native';
-import {ReactNode, useEffect, useState} from "react";
+import {ReactNode, useEffect, useMemo, useState} from "react";
 import {SafeAreaProvider, SafeAreaView} from "react-native-safe-area-context";
 import {useAuthSession} from "@/providers/AuthProvider";
 import {User} from "@supabase/supabase-js";
 import Octicons from '@expo/vector-icons/Octicons';
-import Impl from "@/components/muscleDiagram";
+import MuscleDiagram from "@/components/muscleDiagram";
 import ProgressCharts from "@/components/ProgressCharts";
+import { ExtendedBodyPart } from "react-native-body-highlighter";
 
 export default function HomeScreen(): ReactNode {
     const { getUser } = useAuthSession();
     const [user, setUser] = useState<User | null>(null);
+    const frontMusclesTrained = [
+        {
+            slug: "chest" as const,
+            side: "left" as const,
+            intensity: 1,
+        },
+        {
+            slug: "biceps" as const,
+            intensity: 2,
+        },
+        {
+            slug: "abs" as const,
+            intensity: 3,
+        },
+    ] as ExtendedBodyPart[];
+
+    const backMusclesTrained = [
+        {
+            slug: "upper-back" as const,
+            intensity: 2,
+        },
+    ] as ExtendedBodyPart[];
 
     useEffect(() => {
         const populateUserData = async () => {
@@ -38,7 +61,7 @@ export default function HomeScreen(): ReactNode {
                     <Octicons name="bell" size={24} color="black" style={styles.bellIcon}/>
 
                 </View>
-                <Impl />
+                <MuscleDiagram frontMusclesTrained={frontMusclesTrained} backMusclesTrained={backMusclesTrained} />
                 <ProgressCharts />
             </SafeAreaView>
         </SafeAreaProvider>

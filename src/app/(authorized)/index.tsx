@@ -5,7 +5,7 @@ import {useAuthSession} from "@/providers/AuthProvider";
 import {User} from "@supabase/supabase-js";
 import Octicons from '@expo/vector-icons/Octicons';
 import MuscleDiagram from "@/components/muscleDiagram";
-import ProgressCharts from "@/components/ProgressCharts";
+import ProgressChart from "@/components/ProgressChart";
 import { ExtendedBodyPart } from "react-native-body-highlighter";
 
 export default function HomeScreen(): ReactNode {
@@ -62,7 +62,18 @@ export default function HomeScreen(): ReactNode {
 
                 </View>
                 <MuscleDiagram frontMusclesTrained={frontMusclesTrained} backMusclesTrained={backMusclesTrained} />
-                <ProgressCharts />
+                <ProgressChart
+                    exerciseName={"Chest Press"}
+                    average={75}
+                    data={[
+                        {value: 50, label: 'Mon'},
+                        {value: 70, label: 'Tues'},
+                        {value: 77, label: 'Wed'},
+                        {value: 75, label: 'Thurs'},
+                        {value: 82, label: 'Fri'},
+                        {value: 83, label: 'Sat'}
+                    ]}
+                />
             </SafeAreaView>
         </SafeAreaProvider>
     );

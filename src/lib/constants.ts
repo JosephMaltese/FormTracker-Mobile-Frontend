@@ -31,6 +31,9 @@ const musclesBothSides = [
 
 const intensityColorsHex = ["#B8B8FF", "#5C5CFF", "#0000FF"];
 
+const progressChartPointColorHex = "#0000FF";
+const progressChartLineColorHex = "#5C5CFF";
+
 const appBackgroundColorHexLight = "#FAF9F6" as const;
 const appBackgroundColorHexDark = "#09090B" as const;
 
@@ -43,5 +46,7 @@ export {
     intensityColorsHex,
     defaultBodyColorHex,
     appBackgroundColorHexLight,
-    appBackgroundColorHexDark
+    appBackgroundColorHexDark,
+    progressChartLineColorHex,
+    progressChartPointColorHex
 };

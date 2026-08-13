@@ -1,7 +1,48 @@
 import { View, Text, StyleSheet } from "react-native";
 import Body from "react-native-body-highlighter";
+import {
+    musclesFrontOnly,
+    musclesBackOnly,
+    musclesBothSides,
+    intensityColorsHex,
+    defaultBodyColorHex,
+} from "@/lib/constants";
 
 export default function MuscleDiagram() {
+    const totalFrontMuscles = [...musclesFrontOnly, ...musclesBothSides];
+    const totalBackMuscles = [...musclesBackOnly, ...musclesBothSides];
+
+    const frontData = [
+        ...totalFrontMuscles.map((slug) => ({
+            slug,
+            styles: { fill: defaultBodyColorHex },
+        })),
+        {
+            slug: "chest" as const,
+            side: "left" as const,
+            intensity: 1,
+        },
+        {
+            slug: "biceps" as const,
+            intensity: 2,
+        },
+        {
+            slug: "abs" as const,
+            intensity: 3,
+        },
+    ];
+
+    const backData = [
+        ...totalBackMuscles.map((slug) => ({
+            slug,
+            styles: { fill: defaultBodyColorHex },
+        })),
+        {
+            slug: "upper-back" as const,
+            intensity: 2,
+        },
+    ];
+
     return (
         <View style={styles.outerContainer}>
             <View style={styles.textContainer}>
@@ -12,30 +53,25 @@ export default function MuscleDiagram() {
                     <Text>Trained</Text>
                 </View>
                 <View style={styles.compassRow}>
-                    <View style={styles.circleRed} />
+                    <View style={styles.circleGrey} />
                     <Text>Pending training</Text>
                 </View>
             </View>
             <Body
-                    data={[
-                        { slug: "chest", intensity: 1, side: "left" },
-                        { slug: "biceps", intensity: 2 },
-                    ]}
+                    data={frontData}
                     gender="male"
                     side="front"
-                    scale={0.6}
-                    border="#dfdfdf"
-                    defaultFill="#F0F0F0"
+                    scale={0.5}
+                    border="none"
+                    colors={intensityColorsHex}
             />
             <Body
-                    data={[
-                        { slug: "chest", intensity: 1, side: "left" },
-                        { slug: "biceps", intensity: 2 },
-                    ]}
+                    data={backData}
                     gender="male"
                     side="back"
-                    scale={0.6}
-                    border="#dfdfdf"
+                    scale={0.5}
+                    border="none"
+                    colors={intensityColorsHex}
             />
         </View>
     )
@@ -63,14 +99,14 @@ const styles = StyleSheet.create({
         width: 11,
         height: 11,
         borderRadius: 17,
-        backgroundColor: "#058BC4",
+        backgroundColor: "#0000FF",
         marginRight: 3,
     },
-    circleRed: {
+    circleGrey: {
         width: 11,
         height: 11,
         borderRadius: 17,
-        backgroundColor: "red",
+        backgroundColor: "#989898",
         marginRight: 3,
     },
     compassRow: {

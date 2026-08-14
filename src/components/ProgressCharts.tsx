@@ -1,9 +1,41 @@
 import { View, Text, StyleSheet } from 'react-native';
 import PeriodSelector, {ProgressPeriod} from "@/components/PeriodSelector";
 import ProgressChart from "@/components/ProgressChart";
-import {useState} from "react";
+import {useEffect, useState} from "react";
+import { ScoreDataPoint, ProgressChartProps } from "@/lib/interfaces";
+import {GroupedProgressChartProps, GroupedScoreData} from "@/lib/types";
 
-export default function ProgressCharts() {
+function groupByExercise(data: ScoreDataPoint[]): GroupedScoreData {
+    return data.reduce<GroupedScoreData>((groups, dataPoint) => {
+        const exerciseType = dataPoint.exercise_type;
+
+        if (!groups[exerciseType]) {
+            groups[exerciseType] = [];
+        }
+
+        groups[exerciseType].push(dataPoint);
+        return groups;
+    }, {});
+}
+
+function prepareSevenDaysData(data: GroupedScoreData) {
+    for (const [exerciseName, dataPoints] of Object.entries(data)) {
+
+    }
+
+}
+
+export default function ProgressCharts({ sevenDaysData, thirtyDaysData, yearData  }: { sevenDaysData: ScoreDataPoint[], thirtyDaysData: ScoreDataPoint[], yearData: ScoreDataPoint[] }) {
+    const [sevenDaysProps, setSevenDaysProps] = useState<GroupedProgressChartProps>({});
+
+    useEffect(() => {
+        const groupedSevenDaysData = groupByExercise(sevenDaysData);
+        const groupedThirtyDaysData = groupByExercise(thirtyDaysData);
+        const groupedYearData = groupByExercise(yearData);
+
+        prepareSevenDaysData(groupedSevenDaysData);
+    }, [sevenDaysData, thirtyDaysData, yearData]);
+
     const [period, setPeriod] = useState<ProgressPeriod>("7d");
     return (
         <View style={styles.outerView}>

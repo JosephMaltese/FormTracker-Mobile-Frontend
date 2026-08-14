@@ -8,12 +8,8 @@ import MuscleDiagram from "@/components/muscleDiagram";
 import { ExtendedBodyPart } from "react-native-body-highlighter";
 import ProgressCharts from "@/components/ProgressCharts";
 import supabase from "@/lib/subabaseClient";
+import { ScoreDataPoint } from "@/lib/interfaces";
 
-interface ScoreDataPoint {
-    uploaded_at: string,
-    score: number,
-    exercise_type: string,
-}
 
 export default function HomeScreen(): ReactNode {
     const { getUser } = useAuthSession();
@@ -70,9 +66,9 @@ export default function HomeScreen(): ReactNode {
                     try {
                         const { data, error } = await supabase
                             .from('videos')
-                            .select('uploaded_at, score, exercise_type');
-                            // .eq('user_id', response.id);
-                            // .gte('uploaded_at', gteIso);
+                            .select('uploaded_at, score, exercise_type')
+                            .eq('user_id', response.id)
+                            .gte('uploaded_at', gteIso);
                         if (error) {
                             console.error(error);
                             return null;
@@ -88,12 +84,15 @@ export default function HomeScreen(): ReactNode {
                 if (sevenData) setSevenDaysData(sevenData);
 
                 const thirtyData = await fetchRange(thirtyDaysPrior.toISOString());
-                if (thirtyData) setThirtyDaysData(thirtyData);
+                if (thirtyData) {
+                    setThirtyDaysData(thirtyData);
+                    //console.log('Successfully fetched data from past 30 days:', thirtyData);
+                };
 
                 const yearDataResponse = await fetchRange(yearPrior.toISOString());
                 if (yearDataResponse) {
                     setYearData(yearDataResponse);
-                    console.log('Successfully fetched data from the past year', yearDataResponse);
+                    //console.log('Successfully fetched data from the past year', yearDataResponse);
                 }
 
             } catch (err) {
@@ -119,7 +118,7 @@ export default function HomeScreen(): ReactNode {
 
                     </View>
                     <MuscleDiagram frontMusclesTrained={frontMusclesTrained} backMusclesTrained={backMusclesTrained} />
-                    <ProgressCharts />
+                    <ProgressCharts sevenDaysData={sevenDaysData} thirtyDaysData={thirtyDaysData} yearData={yearData}/>
                 </ScrollView>
             </SafeAreaView>
         </SafeAreaProvider>

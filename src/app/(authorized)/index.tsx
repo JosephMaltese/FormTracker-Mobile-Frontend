@@ -1,12 +1,12 @@
-import { View, Text, StyleSheet } from 'react-native';
-import {ReactNode, useEffect, useMemo, useState} from "react";
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import {ReactNode, useEffect, useState} from "react";
 import {SafeAreaProvider, SafeAreaView} from "react-native-safe-area-context";
 import {useAuthSession} from "@/providers/AuthProvider";
 import {User} from "@supabase/supabase-js";
 import Octicons from '@expo/vector-icons/Octicons';
 import MuscleDiagram from "@/components/muscleDiagram";
-import ProgressChart from "@/components/ProgressChart";
 import { ExtendedBodyPart } from "react-native-body-highlighter";
+import ProgressCharts from "@/components/ProgressCharts";
 
 export default function HomeScreen(): ReactNode {
     const { getUser } = useAuthSession();
@@ -50,30 +50,21 @@ export default function HomeScreen(): ReactNode {
     return (
         <SafeAreaProvider>
             <SafeAreaView style={styles.page}>
-                <View style={styles.heroContainer}>
-                    <View>
-                        {user !== null ?
-                            <Text style={styles.heroPrimaryText}>Hey, {user.user_metadata.display_name}!</Text>
-                            : <Text style={styles.heroPrimaryText}>Welcome back!</Text>
-                        }
-                        <Text style={styles.heroSecondaryText}>Ready to perfect your form today?</Text>
-                    </View>
-                    <Octicons name="bell" size={24} color="black" style={styles.bellIcon}/>
+                <ScrollView>
+                    <View style={styles.heroContainer}>
+                        <View>
+                            {user !== null ?
+                                <Text style={styles.heroPrimaryText}>Hey, {user.user_metadata.display_name}!</Text>
+                                : <Text style={styles.heroPrimaryText}>Welcome back!</Text>
+                            }
+                            <Text style={styles.heroSecondaryText}>Ready to perfect your form today?</Text>
+                        </View>
+                        <Octicons name="bell" size={24} color="black" style={styles.bellIcon}/>
 
-                </View>
-                <MuscleDiagram frontMusclesTrained={frontMusclesTrained} backMusclesTrained={backMusclesTrained} />
-                <ProgressChart
-                    exerciseName={"Chest Press"}
-                    average={75}
-                    data={[
-                        {value: 50, label: 'Mon'},
-                        {value: 70, label: 'Tues'},
-                        {value: 77, label: 'Wed'},
-                        {value: 75, label: 'Thurs'},
-                        {value: 82, label: 'Fri'},
-                        {value: 83, label: 'Sat'}
-                    ]}
-                />
+                    </View>
+                    <MuscleDiagram frontMusclesTrained={frontMusclesTrained} backMusclesTrained={backMusclesTrained} />
+                    <ProgressCharts />
+                </ScrollView>
             </SafeAreaView>
         </SafeAreaProvider>
     );
@@ -86,8 +77,9 @@ const styles = StyleSheet.create({
     heroContainer: {
         display: "flex",
         flexDirection: "row",
-        marginTop: 15,
+        marginTop: 20,
         justifyContent: "space-between",
+        marginBottom: 20,
     },
     heroPrimaryText: {
         fontSize: 20,
@@ -96,9 +88,10 @@ const styles = StyleSheet.create({
     heroSecondaryText: {
         fontSize: 15,
         fontWeight: "light",
+        marginTop: 5,
     },
     bellIcon: {
-        margin: "auto",
+        marginVertical: "auto",
         borderColor: "grey",
         borderStyle: "solid",
         padding: 4,

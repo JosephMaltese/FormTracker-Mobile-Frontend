@@ -1,7 +1,7 @@
 import {View, Text} from 'react-native';
 import {ReactNode} from "react";
 
-export default function StatisticsScreen(): ReactNode {
+export default function ActivityScreen(): ReactNode {
     return (
         <View
             style={{
@@ -10,7 +10,7 @@ export default function StatisticsScreen(): ReactNode {
                 alignItems: 'center',
             }}
         >
-            <Text>Statistics</Text>
+            <Text>Activity</Text>
         </View>
     );
 }

@@ -7,10 +7,21 @@ import Octicons from '@expo/vector-icons/Octicons';
 import MuscleDiagram from "@/components/muscleDiagram";
 import { ExtendedBodyPart } from "react-native-body-highlighter";
 import ProgressCharts from "@/components/ProgressCharts";
+import supabase from "@/lib/subabaseClient";
+
+interface ScoreDataPoint {
+    uploaded_at: string,
+    score: number,
+    exercise_type: string,
+}
 
 export default function HomeScreen(): ReactNode {
     const { getUser } = useAuthSession();
     const [user, setUser] = useState<User | null>(null);
+    const [sevenDaysData, setSevenDaysData] = useState<ScoreDataPoint[]>([]);
+    const [thirtyDaysData, setThirtyDaysData] = useState<ScoreDataPoint[]>([]);
+    const [yearData, setYearData] = useState<ScoreDataPoint[]>([]);
+
     const frontMusclesTrained = [
         {
             slug: "chest" as const,
@@ -35,17 +46,62 @@ export default function HomeScreen(): ReactNode {
     ] as ExtendedBodyPart[];
 
     useEffect(() => {
-        const populateUserData = async () => {
+        // Combined loader so we can await getting the user before querying history.
+        const loadUserAndHistory = async () => {
             try {
                 const response = await getUser();
                 setUser(response);
                 console.log("USER OBTAINED:", response);
+
+                // If we don't have a user id, bail early.
+                if (!response?.id) return;
+
+                const currentDate = new Date();
+                const sevenDaysPrior = new Date();
+                const thirtyDaysPrior = new Date();
+                const yearPrior = new Date();
+                sevenDaysPrior.setDate(currentDate.getDate() - 7);
+                thirtyDaysPrior.setDate(currentDate.getDate() - 30);
+                // Use setFullYear for subtracting a year (setDate was incorrect here)
+                yearPrior.setFullYear(currentDate.getFullYear() - 1);
+
+                // Helper to fetch a range and return the data
+                const fetchRange = async (gteIso: string) => {
+                    try {
+                        const { data, error } = await supabase
+                            .from('videos')
+                            .select('uploaded_at, score, exercise_type');
+                            // .eq('user_id', response.id);
+                            // .gte('uploaded_at', gteIso);
+                        if (error) {
+                            console.error(error);
+                            return null;
+                        }
+                        return data as ScoreDataPoint[] | null;
+                    } catch (err) {
+                        console.error(err);
+                        return null;
+                    }
+                };
+
+                const sevenData = await fetchRange(sevenDaysPrior.toISOString());
+                if (sevenData) setSevenDaysData(sevenData);
+
+                const thirtyData = await fetchRange(thirtyDaysPrior.toISOString());
+                if (thirtyData) setThirtyDaysData(thirtyData);
+
+                const yearDataResponse = await fetchRange(yearPrior.toISOString());
+                if (yearDataResponse) {
+                    setYearData(yearDataResponse);
+                    console.log('Successfully fetched data from the past year', yearDataResponse);
+                }
+
             } catch (err) {
                 console.error(err);
             }
         };
 
-        populateUserData();
+        loadUserAndHistory();
     }, []);
     return (
         <SafeAreaProvider>

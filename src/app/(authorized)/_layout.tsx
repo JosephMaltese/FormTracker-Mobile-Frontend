@@ -32,18 +32,27 @@ export default function AuthorizedLayout(): ReactNode {
                 }}
             />
             <Tabs.Screen
-                name="statistics"
+                name="activity"
                 options={{
-                    title: "statistics",
+                    title: "Activity",
                     tabBarIcon: ({ color, focused }) => (
-                        <Octicons name={"graph"} size={24} color={color} />
+                        <Octicons name={"pulse"} size={24} color={color} />
+                    ),
+                }}
+            />
+            <Tabs.Screen
+                name="new"
+                options={{
+                    title: "New",
+                    tabBarIcon: ({ color, focused }) => (
+                        <Octicons name={"plus-circle"} size={24} color={color} />
                     ),
                 }}
             />
             <Tabs.Screen
                 name="profile"
                 options={{
-                    title: "profile",
+                    title: "Profile",
                     tabBarIcon: ({ color, focused }) => (
                         <Octicons name={"person"} size={24} color={color} />
                     ),

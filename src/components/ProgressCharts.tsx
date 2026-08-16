@@ -2,8 +2,14 @@ import { View, Text, StyleSheet } from 'react-native';
 import PeriodSelector, {ProgressPeriod} from "@/components/PeriodSelector";
 import ProgressChart from "@/components/ProgressChart";
 import {useEffect, useState} from "react";
-import { ScoreDataPoint, ProgressChartProps } from "@/lib/interfaces";
+import {ScoreDataPoint, ProgressChartProps, ProgressDataPoint} from "@/lib/interfaces";
 import {GroupedProgressChartProps, GroupedScoreData} from "@/lib/types";
+
+const exerciseEnumToDisplayName: Record<string, string> = {
+    "BICEP CURL": "Bicep Curl",
+    "BENCH PRESS": "Bench Press",
+    "SQUAT": "Squat",
+}
 
 function groupByExercise(data: ScoreDataPoint[]): GroupedScoreData {
     return data.reduce<GroupedScoreData>((groups, dataPoint) => {
@@ -18,15 +24,47 @@ function groupByExercise(data: ScoreDataPoint[]): GroupedScoreData {
     }, {});
 }
 
-function prepareSevenDaysData(data: GroupedScoreData) {
-    for (const [exerciseName, dataPoints] of Object.entries(data)) {
+function convertISOToDayLabel(isoString: string): string {
+    const date = new Date(isoString);
+    const weekday = new Intl.DateTimeFormat("en-US", {
+        weekday: "short",
+        timeZone: "UTC",
+    }).format(date);
+    return weekday;
+}
 
-    }
+function mapDataPoints (dataPoints: ScoreDataPoint[]): ProgressDataPoint[] {
+    dataPoints.sort((a,b) => a["uploaded_at"].localeCompare(b["uploaded_at"]));
+    const mappedPoints = dataPoints.map((point) => {
+        const label = convertISOToDayLabel(point.uploaded_at);
+        return {
+            value: point.score,
+            label: label,
+        } as ProgressDataPoint;
+    });
 
+    return mappedPoints;
 }
 
 export default function ProgressCharts({ sevenDaysData, thirtyDaysData, yearData  }: { sevenDaysData: ScoreDataPoint[], thirtyDaysData: ScoreDataPoint[], yearData: ScoreDataPoint[] }) {
     const [sevenDaysProps, setSevenDaysProps] = useState<GroupedProgressChartProps>({});
+
+    function prepareSevenDaysData(data: GroupedScoreData) {
+        const rec: GroupedProgressChartProps = {};
+        for (const [exerciseName, dataPoints] of Object.entries(data)) {
+
+
+            const mappedDataPoints = mapDataPoints(dataPoints);
+            const scores = mappedDataPoints.map((point) => point.value);
+            const scoresSum = scores.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
+            const avgScore = scoresSum / scores.length;
+            rec[exerciseName] = {
+                average_score: avgScore,
+                data_points: mappedDataPoints,
+            } as ProgressChartProps;
+        }
+        setSevenDaysProps(rec);
+    }
 
     useEffect(() => {
         const groupedSevenDaysData = groupByExercise(sevenDaysData);
@@ -43,48 +81,16 @@ export default function ProgressCharts({ sevenDaysData, thirtyDaysData, yearData
                 <Text style={styles.titleText}>Form Progress</Text>
                 <PeriodSelector value={period} onChange={setPeriod} />
             </View>
-            <View style={styles.chartView}>
-                <ProgressChart
-                    exerciseName={"Chest Press"}
-                    average={75}
-                    data={[
-                        {value: 50, label: 'Mon'},
-                        {value: 70, label: 'Tues'},
-                        {value: 77, label: 'Wed'},
-                        {value: 75, label: 'Thurs'},
-                        {value: 82, label: 'Fri'},
-                        {value: 83, label: 'Sat'}
-                    ]}
-                />
-            </View>
-            <View style={styles.chartView}>
-                <ProgressChart
-                    exerciseName={"Bicep Curl"}
-                    average={78}
-                    data={[
-                        {value: 43, label: 'Mon'},
-                        {value: 55, label: 'Tues'},
-                        {value: 77, label: 'Wed'},
-                        {value: 72, label: 'Thurs'},
-                        {value: 80, label: 'Fri'},
-                        {value: 90, label: 'Sat'}
-                    ]}
-                />
-            </View>
-            <View style={styles.chartView}>
-                <ProgressChart
-                    exerciseName={"Squat"}
-                    average={67}
-                    data={[
-                        {value: 40, label: 'Mon'},
-                        {value: 44, label: 'Tues'},
-                        {value: 55, label: 'Wed'},
-                        {value: 45, label: 'Thurs'},
-                        {value: 70, label: 'Fri'},
-                        {value: 78, label: 'Sat'}
-                    ]}
-                />
-            </View>
+            {Object.entries(sevenDaysProps).map(([exerciseName, props], index) => (
+                <View key={index}>
+                    <ProgressChart
+                        exerciseName={exerciseEnumToDisplayName[exerciseName] || exerciseName}
+                        average={props.average_score}
+                        data={props.data_points}
+                    />
+
+                </View>
+            ))}
         </View>
     );
 }

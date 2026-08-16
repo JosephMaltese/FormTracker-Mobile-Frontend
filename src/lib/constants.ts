@@ -29,6 +29,12 @@ const musclesBothSides = [
     "ankles"
 ] as const;
 
+const supportedExercises = [
+    "BICEP CURL",
+    "BENCH PRESS",
+    "SQUAT"
+];
+
 const intensityColorsHex = ["#B8B8FF", "#5C5CFF", "#0000FF"];
 
 const progressChartPointColorHex = "#0000FF";
@@ -48,5 +54,6 @@ export {
     appBackgroundColorHexLight,
     appBackgroundColorHexDark,
     progressChartLineColorHex,
-    progressChartPointColorHex
+    progressChartPointColorHex,
+    supportedExercises,
 };

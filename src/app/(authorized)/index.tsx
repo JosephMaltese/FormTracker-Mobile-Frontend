@@ -55,11 +55,12 @@ export default function HomeScreen(): ReactNode {
                 const currentDate = new Date();
                 const sevenDaysPrior = new Date();
                 const thirtyDaysPrior = new Date();
-                const yearPrior = new Date();
+                const currentYear = currentDate.getFullYear();
+
+                const yearPrior = new Date(currentYear, 0, 1);
                 sevenDaysPrior.setDate(currentDate.getDate() - 7);
                 thirtyDaysPrior.setDate(currentDate.getDate() - 30);
                 // Use setFullYear for subtracting a year (setDate was incorrect here)
-                yearPrior.setFullYear(currentDate.getFullYear() - 1);
 
                 // Helper to fetch a range and return the data
                 const fetchRange = async (gteIso: string) => {

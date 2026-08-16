@@ -78,7 +78,7 @@ export default function ProgressChart({
                         spacing={pointSpacing}
                         xAxisLabelTextStyle={{
                             color: "#171717",
-                            fontSize: 13,
+                            fontSize: 7,
                             textAlign: "center",
                         }}
                     />

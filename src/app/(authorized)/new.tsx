@@ -10,6 +10,7 @@ import { Feather, Ionicons } from "@expo/vector-icons";
 import {SafeAreaProvider, SafeAreaView} from "react-native-safe-area-context";
 import {SelectedVideo} from "@/lib/types";
 import * as ImagePicker from "expo-image-picker";
+import VideoPreview from "@/components/VideoPreview";
 
 type Exercise = "Bicep Curl" | "Bench Press" | "Squat";
 
@@ -27,7 +28,7 @@ export default function NewScreen() {
     const [selectedVideo, setSelectedVideo] = useState<SelectedVideo | null>(null);
     const [isUploading, setIsUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
-    const [hasSelectedVideo, setHasSelectedVideo] = useState<boolean>(false);
+    const hasSelectedVideo = selectedVideo !== null;
 
     async function onSelectVideo() {
         const permission =
@@ -46,6 +47,7 @@ export default function NewScreen() {
             allowsEditing: false,
             quality: 1,
             selectionLimit: 1,
+            shouldDownloadFromNetwork: true,
         });
 
         if (result.canceled) return;
@@ -70,8 +72,6 @@ export default function NewScreen() {
             fileSize,
             duration: asset.duration ?? 0,
         });
-
-        setHasSelectedVideo(true);
     }
 
     async function onSubmit(exercise: Exercise) {
@@ -181,28 +181,18 @@ export default function NewScreen() {
                         styles.uploadArea,
                         pressed && styles.uploadAreaPressed,
                     ]}
+                    disabled={hasSelectedVideo}
                 >
-                    <View style={styles.videoIconContainer}>
+                    {!hasSelectedVideo && <View style={styles.videoIconContainer}>
                         <Feather name="video" size={35} color="white" />
-                    </View>
+                    </View>}
 
-                    <Text style={styles.uploadTitle}>
-                        {hasSelectedVideo
-                            ? "Workout Video Selected"
-                            : "Upload Workout Video"}
-                    </Text>
+                    {!hasSelectedVideo && <Text style={styles.uploadTitle}>
+                        Upload Workout Video</Text>}
 
-                    <Text
-                        numberOfLines={1}
-                        style={[
-                            styles.uploadDescription,
-                            hasSelectedVideo && styles.selectedVideoName,
-                        ]}
-                    >
-                        {hasSelectedVideo
-                            ? selectedVideo?.fileName ?? "Video ready to upload"
-                            : ""}
-                    </Text>
+                    {hasSelectedVideo &&
+                        <VideoPreview uri={selectedVideo?.uri ?? ""}/>
+                    }
 
                     {!hasSelectedVideo && (
                         <View style={styles.tip}>
@@ -232,7 +222,7 @@ export default function NewScreen() {
                     ]}
                 >
                     <Text style={styles.submitButtonText}>
-                        Submit for AI Analysis
+                        Submit for Form Analysis
                     </Text>
                 </Pressable>
             </View>
@@ -359,7 +349,7 @@ const styles = StyleSheet.create({
 
     uploadArea: {
         minHeight: 340,
-        paddingHorizontal: 24,
+        paddingHorizontal: 0,
         alignItems: "center",
         justifyContent: "center",
 

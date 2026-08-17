@@ -196,7 +196,7 @@ export default function ProgressCharts({ sevenDaysData, thirtyDaysData, yearData
                 </View>
             ))}
             {period === "7d" && supportedExercises.filter((exerciseName) => !Object.keys(sevenDaysProps).includes(exerciseName)).map((exerciseName) => (
-                <NoChartData name={exerciseEnumToDisplayName[exerciseName] || exerciseName} periodLabel={"this week"}/>
+                <NoChartData name={exerciseEnumToDisplayName[exerciseName] || exerciseName} periodLabel={"this week"} key={exerciseName}/>
             ))
             }
             {period === "30d" && Object.entries(thirtyDaysProps).map(([exerciseName, props], index) => (
@@ -210,7 +210,7 @@ export default function ProgressCharts({ sevenDaysData, thirtyDaysData, yearData
                 </View>
             ))}
             {period === "30d" && supportedExercises.filter((exerciseName) => !Object.keys(thirtyDaysProps).includes(exerciseName)).map((exerciseName) => (
-                <NoChartData name={exerciseEnumToDisplayName[exerciseName] || exerciseName} periodLabel={"this month"}/>
+                <NoChartData name={exerciseEnumToDisplayName[exerciseName] || exerciseName} periodLabel={"this month"} key={exerciseName}/>
             ))
             }
             {period === "1y" && Object.entries(yearProps).map(([exerciseName, props], index) => (
@@ -224,7 +224,7 @@ export default function ProgressCharts({ sevenDaysData, thirtyDaysData, yearData
                 </View>
             ))}
             {period === "1y" && supportedExercises.filter((exerciseName) => !Object.keys(yearProps).includes(exerciseName)).map((exerciseName) => (
-                <NoChartData name={exerciseEnumToDisplayName[exerciseName] || exerciseName} periodLabel={"this year"}/>
+                <NoChartData name={exerciseEnumToDisplayName[exerciseName] || exerciseName} periodLabel={"this year"} key={exerciseName}/>
             ))
             }
         </View>

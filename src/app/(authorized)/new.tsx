@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import {
+    Alert,
     Pressable,
     StyleSheet,
     Text,
@@ -7,15 +8,10 @@ import {
 } from "react-native";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import {SafeAreaProvider, SafeAreaView} from "react-native-safe-area-context";
+import {SelectedVideo} from "@/lib/types";
+import * as ImagePicker from "expo-image-picker";
 
 type Exercise = "Bicep Curl" | "Bench Press" | "Squat";
-
-type NewScreenProps = {
-    hasSelectedVideo?: boolean;
-    selectedVideoName?: string;
-    onSelectVideo?: () => void;
-    onSubmit?: (exercise: Exercise) => void;
-};
 
 const exerciseOptions: Exercise[] = [
     "Bicep Curl",
@@ -23,16 +19,67 @@ const exerciseOptions: Exercise[] = [
     "Squat",
 ];
 
-export default function NewScreen({
-                                  hasSelectedVideo = false,
-                                  selectedVideoName,
-                                  onSelectVideo,
-                                  onSubmit,
-                              }: NewScreenProps) {
+
+export default function NewScreen() {
     const [selectedExercise, setSelectedExercise] =
         useState<Exercise>("Squat");
-
     const [dropdownOpen, setDropdownOpen] = useState(false);
+    const [selectedVideo, setSelectedVideo] = useState<SelectedVideo | null>(null);
+    const [isUploading, setIsUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [hasSelectedVideo, setHasSelectedVideo] = useState<boolean>(false);
+
+    async function onSelectVideo() {
+        const permission =
+            await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+        if (!permission.granted) {
+            Alert.alert(
+                "Permission required",
+                "Please allow access to your videos."
+            );
+            return;
+        }
+
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ["videos"],
+            allowsEditing: false,
+            quality: 1,
+            selectionLimit: 1,
+        });
+
+        if (result.canceled) return;
+
+        const asset = result.assets[0];
+
+        const fileSize = asset.fileSize ?? 0;
+        const maxSize = 100 * 1024 * 1024;
+
+        if (fileSize > maxSize) {
+            Alert.alert(
+                "Video is too large",
+                "Please select a video smaller than 100MB."
+            );
+            return;
+        }
+
+        setSelectedVideo({
+            uri: asset.uri,
+            fileName: asset.fileName ?? `workout-${Date.now()}.mp4`,
+            mimeType: asset.mimeType ?? "video/mp4",
+            fileSize,
+            duration: asset.duration ?? 0,
+        });
+
+        setHasSelectedVideo(true);
+    }
+
+    async function onSubmit(exercise: Exercise) {
+        console.log("SUBMITTED");
+        console.log(exercise);
+        console.log(selectedVideo?.fileName);
+        return;
+    }
 
     function selectExercise(exercise: Exercise) {
         setSelectedExercise(exercise);
@@ -63,7 +110,7 @@ export default function NewScreen({
                             <Ionicons
                                 name="barbell-outline"
                                 size={23}
-                                color="#078ECC"
+                                color="#B8B8FF"
                             />
 
                             <Text style={styles.dropdownText}>
@@ -99,7 +146,7 @@ export default function NewScreen({
                                         <Ionicons
                                             name="barbell-outline"
                                             size={21}
-                                            color="#078ECC"
+                                            color="white"
                                         />
 
                                         <Text
@@ -115,7 +162,7 @@ export default function NewScreen({
                                             <Feather
                                                 name="check"
                                                 size={20}
-                                                color="#078ECC"
+                                                color="white"
                                                 style={styles.checkIcon}
                                             />
                                         )}
@@ -136,7 +183,7 @@ export default function NewScreen({
                     ]}
                 >
                     <View style={styles.videoIconContainer}>
-                        <Feather name="video" size={35} color="#078ECC" />
+                        <Feather name="video" size={35} color="white" />
                     </View>
 
                     <Text style={styles.uploadTitle}>
@@ -153,8 +200,8 @@ export default function NewScreen({
                         ]}
                     >
                         {hasSelectedVideo
-                            ? selectedVideoName ?? "Video ready to upload"
-                            : "Support mp4, mov up to 100MB"}
+                            ? selectedVideo?.fileName ?? "Video ready to upload"
+                            : ""}
                     </Text>
 
                     {!hasSelectedVideo && (
@@ -175,7 +222,7 @@ export default function NewScreen({
                 <Pressable
                     accessibilityRole="button"
                     disabled={!hasSelectedVideo}
-                    onPress={() => onSubmit?.(selectedExercise)}
+                    onPress={() => onSubmit(selectedExercise)}
                     style={({ pressed }) => [
                         styles.submitButton,
                         !hasSelectedVideo && styles.submitButtonDisabled,
@@ -292,7 +339,7 @@ const styles = StyleSheet.create({
     },
 
     selectedOption: {
-        backgroundColor: "#EFF8FC",
+        backgroundColor: "#B8B8FF",
     },
 
     optionText: {
@@ -302,7 +349,7 @@ const styles = StyleSheet.create({
     },
 
     selectedOptionText: {
-        color: "#078ECC",
+        color: "white",
         fontWeight: "700",
     },
 
@@ -319,12 +366,12 @@ const styles = StyleSheet.create({
         backgroundColor: "#FFFFFF",
         borderWidth: 2,
         borderStyle: "dashed",
-        borderColor: "#078ECC",
+        borderColor: "#5C5CFF",
         borderRadius: 27,
     },
 
     uploadAreaPressed: {
-        backgroundColor: "#F5FBFE",
+        backgroundColor: "#B8B8FF",
     },
 
     videoIconContainer: {
@@ -334,7 +381,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "center",
 
-        backgroundColor: "#E1F4FC",
+        backgroundColor: "#B8B8FF",
         borderRadius: 44,
     },
 
@@ -380,7 +427,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "center",
 
-        backgroundColor: "#078ECC",
+        backgroundColor: "#5C5CFF",
         borderRadius: 22,
     },
 
@@ -389,7 +436,7 @@ const styles = StyleSheet.create({
     },
 
     submitButtonPressed: {
-        backgroundColor: "#067CB2",
+        backgroundColor: "#0000FF",
         transform: [{ scale: 0.99 }],
     },
 

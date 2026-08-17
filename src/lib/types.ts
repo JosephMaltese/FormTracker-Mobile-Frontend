@@ -4,4 +4,12 @@ type GroupedScoreData = Record<string, ScoreDataPoint[]>;
 
 type GroupedProgressChartProps = Record<string, ProgressChartProps>
 
-export { GroupedScoreData, GroupedProgressChartProps };
+type SelectedVideo = {
+    uri: string;
+    fileName: string;
+    mimeType: string;
+    fileSize: number;
+    duration: number | null;
+}
+
+export { GroupedScoreData, GroupedProgressChartProps, SelectedVideo };

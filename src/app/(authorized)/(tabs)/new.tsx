@@ -11,6 +11,7 @@ import {SafeAreaProvider, SafeAreaView} from "react-native-safe-area-context";
 import {SelectedVideo} from "@/lib/types";
 import * as ImagePicker from "expo-image-picker";
 import VideoPreview from "@/components/VideoPreview";
+import {router} from "expo-router";
 
 type Exercise = "Bicep Curl" | "Bench Press" | "Squat";
 
@@ -83,7 +84,13 @@ export default function NewScreen() {
             return;
         }
 
-
+        router.push({
+            pathname: "/analysis/[videoId]",
+            params: {
+                /// TODO: SUBMIT VIDEO FOR ANALYSIS AND GENERATE + PASS REAL VIDEO ID
+                videoId: "test-video",
+            },
+        });
         return;
     }
 

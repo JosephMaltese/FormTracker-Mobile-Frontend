@@ -1,8 +1,11 @@
-import { Tabs } from 'expo-router';
-import {ReactNode} from "react";
-import {appBackgroundColorHexDark, appBackgroundColorHexLight} from "@/lib/constants";
-import {useColorScheme} from "react-native";
-import Octicons from '@expo/vector-icons/Octicons';
+import { Stack } from "expo-router";
+import { ReactNode } from "react";
+import { useColorScheme } from "react-native";
+
+import {
+    appBackgroundColorHexDark,
+    appBackgroundColorHexLight,
+} from "@/lib/constants";
 
 export default function AuthorizedLayout(): ReactNode {
     const isDark = useColorScheme() === "dark";
@@ -12,52 +15,22 @@ export default function AuthorizedLayout(): ReactNode {
         : appBackgroundColorHexLight;
 
     return (
-        <Tabs
+        <Stack
             screenOptions={{
                 headerShown: false,
-                tabBarActiveTintColor: "#2563eb",
-
-                sceneStyle: {
+                contentStyle: {
                     backgroundColor,
                 },
             }}
         >
-            <Tabs.Screen
-                name="index"
+            <Stack.Screen name="(tabs)" />
+
+            <Stack.Screen
+                name="analysis/[videoId]"
                 options={{
-                    title: "Home",
-                    tabBarIcon: ({ color, focused }) => (
-                        <Octicons name={"home"} size={24} color={color} />
-                    ),
+                    animation: "slide_from_right",
                 }}
             />
-            <Tabs.Screen
-                name="activity"
-                options={{
-                    title: "Activity",
-                    tabBarIcon: ({ color, focused }) => (
-                        <Octicons name={"pulse"} size={24} color={color} />
-                    ),
-                }}
-            />
-            <Tabs.Screen
-                name="new"
-                options={{
-                    title: "New",
-                    tabBarIcon: ({ color, focused }) => (
-                        <Octicons name={"plus-circle"} size={24} color={color} />
-                    ),
-                }}
-            />
-            <Tabs.Screen
-                name="profile"
-                options={{
-                    title: "Profile",
-                    tabBarIcon: ({ color, focused }) => (
-                        <Octicons name={"person"} size={24} color={color} />
-                    ),
-                }}
-            />
-        </Tabs>
+        </Stack>
     );
 }

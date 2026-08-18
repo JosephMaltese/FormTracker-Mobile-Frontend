@@ -78,6 +78,12 @@ export default function NewScreen() {
         console.log("SUBMITTED");
         console.log(exercise);
         console.log(selectedVideo?.fileName);
+
+        if (!hasSelectedVideo) {
+            return;
+        }
+
+
         return;
     }
 
@@ -191,7 +197,21 @@ export default function NewScreen() {
                         Upload Workout Video</Text>}
 
                     {hasSelectedVideo &&
-                        <VideoPreview uri={selectedVideo?.uri ?? ""}/>
+                        <View style={styles.videoContainer}>
+                            <VideoPreview uri={selectedVideo?.uri ?? ""}/>
+                            <Pressable
+                                accessibilityRole="button"
+                                accessibilityLabel="Remove selected video"
+                                hitSlop={10}
+                                onPress={() => setSelectedVideo(null)}
+                                style={({ pressed }) => [
+                                    styles.removeButton,
+                                    pressed && styles.removeButtonPressed,
+                                ]}
+                            >
+                                <Feather name="x" size={20} color="#FFFFFF" />
+                            </Pressable>
+                        </View>
                     }
 
                     {!hasSelectedVideo && (
@@ -240,7 +260,7 @@ const styles = StyleSheet.create({
     screen: {
         flex: 1,
         paddingHorizontal: 28,
-        paddingTop: 72,
+        paddingTop: 36,
     },
 
     title: {
@@ -413,7 +433,7 @@ const styles = StyleSheet.create({
 
     submitButton: {
         height: 65,
-        marginTop: 28,
+        marginTop: 52,
         alignItems: "center",
         justifyContent: "center",
 
@@ -438,5 +458,30 @@ const styles = StyleSheet.create({
 
     pressed: {
         opacity: 0.75,
+    },
+
+    removeButton: {
+        position: "absolute",
+        top: 12,
+        left: 12,
+        zIndex: 10,
+
+        width: 36,
+        height: 36,
+        alignItems: "center",
+        justifyContent: "center",
+
+        backgroundColor: "rgba(0, 0, 0, 0.7)",
+        borderRadius: 18,
+    },
+
+    removeButtonPressed: {
+        opacity: 0.75,
+        transform: [{ scale: 0.92 }],
+    },
+
+    videoContainer: {
+        width: "100%",
+        position: "relative",
     },
 });

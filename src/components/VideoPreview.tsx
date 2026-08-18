@@ -7,13 +7,14 @@ export default function VideoPreview({ uri }: { uri: string }) {
         player.loop = true;
         player.muted = true;
         player.audioMixingMode = "mixWithOthers";
+        player.play();
     });
 
     return (
         <VideoView
             player={player}
             style={styles.videoPreview}
-            nativeControls
+            nativeControls={false}
             contentFit={"cover"}
         />
     );

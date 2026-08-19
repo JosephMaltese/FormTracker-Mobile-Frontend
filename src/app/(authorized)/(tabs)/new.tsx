@@ -154,6 +154,29 @@ export default function NewScreen() {
         }
     }
 
+    async function storeVideoInBucket(storagePath: string, arrayBuffer: ArrayBuffer) {
+        const { data, error } = await supabase.storage.from('videos').upload(storagePath, arrayBuffer, {
+            contentType: "video/mp4",
+            upsert: false,
+        });
+
+        if (error) {
+            throw error;
+        }
+
+        return data;
+    }
+
+    async function storeAnalysis(storagePath: string, userId: string, exercise: Exercise, score: number) {
+        const { data, error } = await supabase.from('videos').insert({ file_url: storagePath, user_id: userId, exercise_type: exercise, score: score, analysis: '' }).select("id").single();
+
+        if (error) {
+            throw error;
+        }
+
+        return data?.id;
+    }
+
     async function onSubmit(exercise: Exercise) {
         console.log("SUBMITTED");
         console.log(exercise);
@@ -187,35 +210,38 @@ export default function NewScreen() {
 
         const storagePath = `${userId}/${Date.now()}-processed.mp4`;
         // Store the video file in supabase storage bucket
-        const { data, error } = await supabase.storage.from('videos').upload(storagePath, arrayBuffer, {
-            contentType: "video/mp4",
-            upsert: false,
-        });
-
-        if (error) {
-            throw error;
-        }
+        await storeVideoInBucket(storagePath, arrayBuffer);
 
         console.log('Successfully uploaded video file to storage bucket');
 
         // save analysis in supabase database
         // TODO: FETCH TEXT ANALYSIS FROM GPT MODEL AND INCLUDE IN REQUEST
-        await supabase.from('videos').insert({ file_url: storagePath, user_id: userId, exercise_type: exercise, score: videoAnalysis.totalScore, analysis: '' })
+        const videoId = await storeAnalysis(storagePath, userId, exercise, videoAnalysis.totalScore);
+        console.log("Stored the analysis data in db");
+
+        console.log('Video Id:', videoId);
 
         setIsUploading(false);
+
         router.push({
             pathname: "/analysis/[videoId]",
             params: {
-                /// TODO: SUBMIT VIDEO FOR ANALYSIS AND GENERATE + PASS REAL VIDEO ID
-                videoId: "test-video",
+                videoId: videoId,
             },
         });
-        return;
     }
 
     function selectExercise(exercise: Exercise) {
         setSelectedExercise(exercise);
         setDropdownOpen(false);
+    }
+
+    if (isUploading) {
+        return (
+            <View>
+                <Text>Uploading...</Text>
+            </View>
+        );
     }
 
     return (

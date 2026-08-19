@@ -48,7 +48,7 @@ export default function AuthProvider ({children}:{children: ReactNode}): ReactNo
             setIsLoading(false);
             if (data.session !== null) {
                 console.log('SESSION FOUND');
-                router.replace('/(authorized)');
+                router.replace('/(authorized)/(tabs)');
             } else {
                 console.log('NO SESSION FOUND');
             }

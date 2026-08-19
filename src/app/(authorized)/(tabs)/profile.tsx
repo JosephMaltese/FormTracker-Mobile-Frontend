@@ -57,9 +57,7 @@ const menuItems: ProfileMenuItem[] = [
 ];
 
 export default function ProfileScreen() {
-    const { getUser } = useAuthSession();
-    const [user, setUser] = useState<User | null>(null);
-    const [userLoaded, setUserLoaded] = useState(false);
+    const { session } = useAuthSession();
 
     function handleMenuPress(label: string) {
         // Replace this with your navigation logic.
@@ -79,36 +77,10 @@ export default function ProfileScreen() {
                     text: "Log Out",
                     style: "destructive",
                     onPress: async () => {
-                        // Add your Supabase sign-out logic here:
-                        // await supabase.auth.signOut();
+                        // Add Supabase sign-out logic here:
                     },
                 },
             ]
-        );
-    }
-
-    useEffect(() => {
-        const loadUser = async () => {
-            try {
-                const res = await getUser();
-                setUser(res);
-                setUserLoaded(true);
-            } catch (error) {
-                console.log(error);
-            }
-        }
-
-        loadUser();
-    }, [])
-
-    if (!userLoaded) {
-        return (
-            <SafeAreaProvider>
-                <SafeAreaView>
-                    <Text>Loading...</Text>
-                </SafeAreaView>
-            </SafeAreaProvider>
-
         );
     }
 
@@ -128,8 +100,8 @@ export default function ProfileScreen() {
                     </View>
 
                     <View style={styles.profileInformation}>
-                        <Text style={styles.userName}>{user?.user_metadata.display_name}</Text>
-                        <Text style={styles.email}>{user?.email}</Text>
+                        <Text style={styles.userName}>{session?.user.user_metadata.display_name}</Text>
+                        <Text style={styles.email}>{session?.user.email}</Text>
                         <Text style={styles.memberSince}>
                             Member since 2026
                         </Text>

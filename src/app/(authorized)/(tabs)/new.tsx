@@ -14,6 +14,7 @@ import VideoPreview from "@/components/VideoPreview";
 import {router} from "expo-router";
 import {apiURL} from "@/lib/constants";
 import supabase from "@/lib/subabaseClient";
+import {useAuthSession} from "@/providers/AuthProvider";
 
 type Exercise = "Bicep Curl" | "Bench Press" | "Squat";
 
@@ -41,6 +42,7 @@ export default function NewScreen() {
     const [selectedVideo, setSelectedVideo] = useState<SelectedVideo | null>(null);
     const [isUploading, setIsUploading] = useState(false);
     const hasSelectedVideo = selectedVideo !== null;
+    const { session } = useAuthSession();
 
     async function onSelectVideo() {
         const permission =
@@ -174,6 +176,15 @@ export default function NewScreen() {
 
         const arrayBuffer = await processedVideo.arrayBuffer();
 
+        // Get the current user from the session if it exists
+        if (!session || !session.user) {
+            console.error('User not authenticated');
+            // Handle not authenticated case
+            return;
+        }
+
+        const userId = session.user.id;
+
         const storagePath = `${userId}/${Date.now()}-processed.mp4`;
         // Store the video file in supabase storage bucket
         const { data, error } = await supabase.storage.from('videos').upload(storagePath, arrayBuffer, {
@@ -187,6 +198,11 @@ export default function NewScreen() {
 
         console.log('Successfully uploaded video file to storage bucket');
 
+        // save analysis in supabase database
+        // TODO: FETCH TEXT ANALYSIS FROM GPT MODEL AND INCLUDE IN REQUEST
+        await supabase.from('videos').insert({ file_url: storagePath, user_id: userId, exercise_type: exercise, score: videoAnalysis.totalScore, analysis: '' })
+
+        setIsUploading(false);
         router.push({
             pathname: "/analysis/[videoId]",
             params: {

@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { File } from "expo-file-system";
+import { fetch } from "expo/fetch";
 import {
     Alert,
     Pressable,
@@ -17,12 +19,19 @@ import supabase from "@/lib/subabaseClient";
 import {useAuthSession} from "@/providers/AuthProvider";
 
 type Exercise = "Bicep Curl" | "Bench Press" | "Squat";
+type APIExercise = "BICEP CURL" | "BENCH PRESS" | "SQUAT";
 
 const exerciseOptions: Exercise[] = [
     "Bicep Curl",
     "Bench Press",
     "Squat",
 ];
+
+const exerciseAPIMap: Record<Exercise, APIExercise> = {
+    "Bicep Curl": "BICEP CURL",
+    "Bench Press": "BENCH PRESS",
+    "Squat": "SQUAT",
+}
 
 function requireHeader(response: Response, name: string): string {
     const value = response.headers.get(name);
@@ -88,69 +97,66 @@ export default function NewScreen() {
         });
     }
 
-    async function getAnalysis(exercise: Exercise) {
-        try {
-            const formData = new FormData();
-            formData.append("file", {
-                uri: selectedVideo?.uri,
-                name: selectedVideo?.fileName,
-                type: selectedVideo?.mimeType,
-            } as any);
-            formData.append("exercise", exercise);
+    async function getAnalysis(exercise: APIExercise): Promise<{ videoAnalysis: VideoAnalysis; processedVideoBytes: Uint8Array; }> {
+        if (!selectedVideo) {
+            throw new Error("No video selected");
+        }
 
-            const response = await fetch(apiURL, {
-                method: "POST",
-                body: formData,
-            });
+        const videoFile = new File(selectedVideo.uri);
+        const formData = new FormData();
+        formData.append("file", videoFile, selectedVideo.fileName);
+        formData.append("exercise", exercise);
 
-            if (!response.ok) {
-                const message = await response.text();
-                throw new Error(
-                    `Analysis failed (${response.status}): ${message}`
-                );
-            }
+        const response = await fetch(apiURL, {
+            method: "POST",
+            body: formData,
+        });
 
-            const videoAnalysis: VideoAnalysis =  {
-                totalScore: Number(
-                    requireHeader(response, "total_score")
-                ),
-                repCount: Number(
-                    requireHeader(response, "rep_count")
-                ),
-                completeRomRepCount: Number(
-                    requireHeader(response, "complete_rom_rep_count")
-                ),
-                partialRomRepCount: Number(
-                    requireHeader(response, "partial_rom_rep_count")
-                ),
-                cheatRepCount: Number(
-                    requireHeader(response, "cheat_rep_count")
-                ),
-                eccentricDurations: JSON.parse(
-                    requireHeader(response, "eccentric_durations")
-                ),
-                minAndMaxRepAngles: JSON.parse(
-                    requireHeader(response, "min_and_max_rep_angles")
-                ),
-                footCheatReps: Number(
-                    requireHeader(response, "foot_cheat_reps")
-                ),
-                toeKneeAlignedReps: Number(
-                    requireHeader(response, "toe_knee_aligned_reps")
-                ),
-                horizontalThighReps: Number(
+        if (!response.ok) {
+            const message = await response.text();
+            throw new Error(
+                `Analysis failed (${response.status}): ${message}`
+            );
+        }
+
+        const videoAnalysis: VideoAnalysis =  {
+            totalScore: Number(
+                requireHeader(response, "total_score")
+            ),
+            repCount: Number(
+                requireHeader(response, "rep_count")
+            ),
+            completeRomRepCount: Number(
+                requireHeader(response, "complete_rom_rep_count")
+            ),
+            partialRomRepCount: Number(
+                requireHeader(response, "partial_rom_rep_count")
+            ),
+            cheatRepCount: Number(
+                requireHeader(response, "cheat_rep_count")
+            ),
+            eccentricDurations: JSON.parse(
+                requireHeader(response, "eccentric_durations")
+            ),
+            minAndMaxRepAngles: JSON.parse(
+                requireHeader(response, "min_and_max_rep_angles")
+            ),
+            footCheatReps: Number(
+                requireHeader(response, "foot_cheat_reps")
+            ),
+            toeKneeAlignedReps: Number(
+                requireHeader(response, "toe_knee_aligned_reps")
+            ),
+            horizontalThighReps: Number(
                     requireHeader(response, "horizontal_thigh_reps")
-                )
-            };
+            )
+        };
 
-            const processedVideo = await response.blob();
+        const processedVideoBytes = await response.bytes();
 
-            return {
-                videoAnalysis,
-                processedVideo,
-            }
-        } catch (error) {
-            console.error(error);
+        return {
+            videoAnalysis,
+            processedVideoBytes,
         }
     }
 
@@ -167,8 +173,8 @@ export default function NewScreen() {
         return data;
     }
 
-    async function storeAnalysis(storagePath: string, userId: string, exercise: Exercise, score: number) {
-        const { data, error } = await supabase.from('videos').insert({ file_url: storagePath, user_id: userId, exercise_type: exercise, score: score, analysis: '' }).select("id").single();
+    async function storeAnalysis(storagePath: string, userId: string, exercise: APIExercise, score: number) {
+        const { data, error } = await supabase.from('videos').insert({ file_url: storagePath, user_id: userId, exercise_type: exercise, score: score, analysis: 'sample gpt analysis' }).select("id").single();
 
         if (error) {
             throw error;
@@ -182,22 +188,23 @@ export default function NewScreen() {
         console.log(exercise);
         console.log(selectedVideo?.fileName);
 
+        const apiExercise = exerciseAPIMap[exercise];
+
         if (!hasSelectedVideo) {
             return;
         }
 
         setIsUploading(true);
 
-        const res = await getAnalysis(exercise);
+        console.log('Fetching Analysis...')
+        const { videoAnalysis, processedVideoBytes } = await getAnalysis(apiExercise);
+        console.log("Analysis obtained");
 
-        const videoAnalysis = res?.videoAnalysis;
-        const processedVideo = res?.processedVideo;
-
-        if (!processedVideo || !videoAnalysis) {
+        if (!processedVideoBytes || !videoAnalysis) {
             return;
         }
 
-        const arrayBuffer = await processedVideo.arrayBuffer();
+        const arrayBuffer = new Uint8Array(processedVideoBytes).buffer;
 
         // Get the current user from the session if it exists
         if (!session || !session.user) {
@@ -210,13 +217,14 @@ export default function NewScreen() {
 
         const storagePath = `${userId}/${Date.now()}-processed.mp4`;
         // Store the video file in supabase storage bucket
+        console.log('Uploading video to storage bucket');
         await storeVideoInBucket(storagePath, arrayBuffer);
 
         console.log('Successfully uploaded video file to storage bucket');
 
         // save analysis in supabase database
         // TODO: FETCH TEXT ANALYSIS FROM GPT MODEL AND INCLUDE IN REQUEST
-        const videoId = await storeAnalysis(storagePath, userId, exercise, videoAnalysis.totalScore);
+        const videoId = await storeAnalysis(storagePath, userId, apiExercise, videoAnalysis.totalScore);
         console.log("Stored the analysis data in db");
 
         console.log('Video Id:', videoId);

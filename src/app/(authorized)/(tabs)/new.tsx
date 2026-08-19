@@ -8,10 +8,11 @@ import {
 } from "react-native";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import {SafeAreaProvider, SafeAreaView} from "react-native-safe-area-context";
-import {SelectedVideo} from "@/lib/types";
+import {SelectedVideo, VideoAnalysis} from "@/lib/types";
 import * as ImagePicker from "expo-image-picker";
 import VideoPreview from "@/components/VideoPreview";
 import {router} from "expo-router";
+import {apiURL} from "@/lib/constants";
 
 type Exercise = "Bicep Curl" | "Bench Press" | "Squat";
 
@@ -21,6 +22,16 @@ const exerciseOptions: Exercise[] = [
     "Squat",
 ];
 
+function requireHeader(response: Response, name: string): string {
+    const value = response.headers.get(name);
+
+    if (value === null) {
+        throw new Error(`Response is missing header "${name}"`);
+    }
+
+    return value;
+}
+
 
 export default function NewScreen() {
     const [selectedExercise, setSelectedExercise] =
@@ -28,7 +39,6 @@ export default function NewScreen() {
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [selectedVideo, setSelectedVideo] = useState<SelectedVideo | null>(null);
     const [isUploading, setIsUploading] = useState(false);
-    const [uploadProgress, setUploadProgress] = useState(0);
     const hasSelectedVideo = selectedVideo !== null;
 
     async function onSelectVideo() {
@@ -82,6 +92,69 @@ export default function NewScreen() {
 
         if (!hasSelectedVideo) {
             return;
+        }
+
+        setIsUploading(true);
+
+        try {
+            const formData = new FormData();
+            formData.append("file", {
+                uri: selectedVideo.uri,
+                name: selectedVideo.fileName,
+                type: selectedVideo.mimeType,
+            } as any);
+            formData.append("exercise", exercise);
+
+            const response = await fetch(apiURL, {
+                method: "POST",
+                body: formData,
+            });
+
+            if (!response.ok) {
+                const message = await response.text();
+                throw new Error(
+                    `Analysis failed (${response.status}): ${message}`
+                );
+            }
+
+            const videoAnalysis: VideoAnalysis =  {
+                totalScore: Number(
+                    requireHeader(response, "total_score")
+                ),
+                repCount: Number(
+                    requireHeader(response, "rep_count")
+                ),
+                completeRomRepCount: Number(
+                    requireHeader(response, "complete_rom_rep_count")
+                ),
+                partialRomRepCount: Number(
+                    requireHeader(response, "partial_rom_rep_count")
+                ),
+                cheatRepCount: Number(
+                    requireHeader(response, "cheat_rep_count")
+                ),
+                eccentricDurations: JSON.parse(
+                    requireHeader(response, "eccentric_durations")
+                ),
+                minAndMaxRepAngles: JSON.parse(
+                    requireHeader(response, "min_and_max_rep_angles")
+                ),
+                footCheatReps: Number(
+                    requireHeader(response, "foot_cheat_reps")
+                ),
+                toeKneeAlignedReps: Number(
+                    requireHeader(response, "toe_knee_aligned_reps")
+                ),
+                horizontalThighReps: Number(
+                    requireHeader(response, "horizontal_thigh_reps")
+                )
+            };
+
+            const processedVideo = await response.blob();
+
+
+        } catch (error) {
+            console.error(error);
         }
 
         router.push({

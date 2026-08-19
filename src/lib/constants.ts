@@ -45,6 +45,8 @@ const appBackgroundColorHexDark = "#09090B" as const;
 
 const defaultBodyColorHex = "#989898" as const;
 
+const apiURL = "http://127.0.0.1:8000/analyze-video/";
+
 export {
     musclesFrontOnly,
     musclesBackOnly,
@@ -56,4 +58,5 @@ export {
     progressChartLineColorHex,
     progressChartPointColorHex,
     supportedExercises,
+    apiURL,
 };

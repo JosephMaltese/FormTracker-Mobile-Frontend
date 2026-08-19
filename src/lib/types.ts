@@ -12,4 +12,22 @@ type SelectedVideo = {
     duration: number | null;
 }
 
-export { GroupedScoreData, GroupedProgressChartProps, SelectedVideo };
+type RepAngleRange = {
+    minAngle: number;
+    maxAngle: number;
+}
+
+type VideoAnalysis = {
+    totalScore: number;
+    repCount: number;
+    completeRomRepCount: number;
+    partialRomRepCount: number;
+    cheatRepCount: number;
+    eccentricDurations: number[];
+    minAndMaxRepAngles: RepAngleRange[];
+    footCheatReps: number;
+    toeKneeAlignedReps: number;
+    horizontalThighReps: number;
+}
+
+export { GroupedScoreData, GroupedProgressChartProps, SelectedVideo, VideoAnalysis, RepAngleRange };

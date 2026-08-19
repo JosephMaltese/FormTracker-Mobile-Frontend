@@ -13,6 +13,7 @@ import * as ImagePicker from "expo-image-picker";
 import VideoPreview from "@/components/VideoPreview";
 import {router} from "expo-router";
 import {apiURL} from "@/lib/constants";
+import supabase from "@/lib/subabaseClient";
 
 type Exercise = "Bicep Curl" | "Bench Press" | "Squat";
 
@@ -85,23 +86,13 @@ export default function NewScreen() {
         });
     }
 
-    async function onSubmit(exercise: Exercise) {
-        console.log("SUBMITTED");
-        console.log(exercise);
-        console.log(selectedVideo?.fileName);
-
-        if (!hasSelectedVideo) {
-            return;
-        }
-
-        setIsUploading(true);
-
+    async function getAnalysis(exercise: Exercise) {
         try {
             const formData = new FormData();
             formData.append("file", {
-                uri: selectedVideo.uri,
-                name: selectedVideo.fileName,
-                type: selectedVideo.mimeType,
+                uri: selectedVideo?.uri,
+                name: selectedVideo?.fileName,
+                type: selectedVideo?.mimeType,
             } as any);
             formData.append("exercise", exercise);
 
@@ -152,10 +143,49 @@ export default function NewScreen() {
 
             const processedVideo = await response.blob();
 
-
+            return {
+                videoAnalysis,
+                processedVideo,
+            }
         } catch (error) {
             console.error(error);
         }
+    }
+
+    async function onSubmit(exercise: Exercise) {
+        console.log("SUBMITTED");
+        console.log(exercise);
+        console.log(selectedVideo?.fileName);
+
+        if (!hasSelectedVideo) {
+            return;
+        }
+
+        setIsUploading(true);
+
+        const res = await getAnalysis(exercise);
+
+        const videoAnalysis = res?.videoAnalysis;
+        const processedVideo = res?.processedVideo;
+
+        if (!processedVideo || !videoAnalysis) {
+            return;
+        }
+
+        const arrayBuffer = await processedVideo.arrayBuffer();
+
+        const storagePath = `${userId}/${Date.now()}-processed.mp4`;
+        // Store the video file in supabase storage bucket
+        const { data, error } = await supabase.storage.from('videos').upload(storagePath, arrayBuffer, {
+            contentType: "video/mp4",
+            upsert: false,
+        });
+
+        if (error) {
+            throw error;
+        }
+
+        console.log('Successfully uploaded video file to storage bucket');
 
         router.push({
             pathname: "/analysis/[videoId]",

@@ -4,11 +4,11 @@ import {SafeAreaProvider, SafeAreaView} from "react-native-safe-area-context";
 import {useAuthSession} from "@/providers/AuthProvider";
 import {User} from "@supabase/supabase-js";
 import Octicons from '@expo/vector-icons/Octicons';
-import MuscleDiagram from "@/components/muscleDiagram";
 import { ExtendedBodyPart } from "react-native-body-highlighter";
 import ProgressCharts from "@/components/ProgressCharts";
 import supabase from "@/lib/subabaseClient";
 import { ScoreDataPoint } from "@/lib/interfaces";
+import HomePageMuscleDiagram from "@/components/homePageMuscleDiagram";
 
 
 export default function HomeScreen(): ReactNode {
@@ -118,7 +118,7 @@ export default function HomeScreen(): ReactNode {
                         <Octicons name="bell" size={24} color="black" style={styles.bellIcon}/>
 
                     </View>
-                    <MuscleDiagram frontMusclesTrained={frontMusclesTrained} backMusclesTrained={backMusclesTrained} />
+                    <HomePageMuscleDiagram frontMusclesTrained={frontMusclesTrained} backMusclesTrained={backMusclesTrained} />
                     <ProgressCharts sevenDaysData={sevenDaysData} thirtyDaysData={thirtyDaysData} yearData={yearData}/>
                 </ScrollView>
             </SafeAreaView>

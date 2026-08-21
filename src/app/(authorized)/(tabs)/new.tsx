@@ -17,6 +17,7 @@ import {router} from "expo-router";
 import {apiURL} from "@/lib/constants";
 import supabase from "@/lib/subabaseClient";
 import {useAuthSession} from "@/providers/AuthProvider";
+import DumbbellSpinner from "@/components/dumbbellSpinner";
 
 type Exercise = "Bicep Curl" | "Bench Press" | "Squat";
 type APIExercise = "BICEP CURL" | "BENCH PRESS" | "SQUAT";
@@ -246,9 +247,7 @@ export default function NewScreen() {
 
     if (isUploading) {
         return (
-            <View>
-                <Text>Uploading...</Text>
-            </View>
+            <DumbbellSpinner />
         );
     }
 
@@ -276,7 +275,7 @@ export default function NewScreen() {
                             <Ionicons
                                 name="barbell-outline"
                                 size={23}
-                                color="#B8B8FF"
+                                color="black"
                             />
 
                             <Text style={styles.dropdownText}>
@@ -312,7 +311,7 @@ export default function NewScreen() {
                                         <Ionicons
                                             name="barbell-outline"
                                             size={21}
-                                            color="white"
+                                            color="black"
                                         />
 
                                         <Text
@@ -328,7 +327,7 @@ export default function NewScreen() {
                                             <Feather
                                                 name="check"
                                                 size={20}
-                                                color="white"
+                                                color="black"
                                                 style={styles.checkIcon}
                                             />
                                         )}
@@ -519,7 +518,7 @@ const styles = StyleSheet.create({
     },
 
     selectedOptionText: {
-        color: "white",
+        color: "black",
         fontWeight: "700",
     },
 
@@ -551,7 +550,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "center",
 
-        backgroundColor: "#B8B8FF",
+        backgroundColor: "#5C5CFF",
         borderRadius: 44,
     },
 

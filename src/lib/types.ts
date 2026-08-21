@@ -30,4 +30,14 @@ type VideoAnalysis = {
     horizontalThighReps: number;
 }
 
-export { GroupedScoreData, GroupedProgressChartProps, SelectedVideo, VideoAnalysis, RepAngleRange };
+type SummaryPageAnalysis = {
+    llmAnalysis: string;
+    exerciseType: string;
+    videoUrl: string;
+    id: number;
+    score: number;
+    uploadedAt: string;
+    userId: string;
+}
+
+export { GroupedScoreData, GroupedProgressChartProps, SelectedVideo, VideoAnalysis, RepAngleRange, SummaryPageAnalysis };

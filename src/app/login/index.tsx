@@ -25,7 +25,7 @@ export default function Login(): ReactNode {
 
         if (result.success) {
             console.log("Login successful:", result.data);
-            router.replace('/(authorized)');
+            router.replace('/(authorized)/(tabs)');
         } else {
             console.error("Login failed:", result.error);
         }

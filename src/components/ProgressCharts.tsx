@@ -5,14 +5,8 @@ import {useEffect, useState} from "react";
 import {ProgressChartProps, ProgressDataPoint, ScoreDataPoint} from "@/lib/interfaces";
 import {GroupedProgressChartProps, GroupedScoreData} from "@/lib/types";
 import {TimePeriod} from "@/lib/enums";
-import { supportedExercises } from "@/lib/constants";
+import {exerciseEnumToDisplayName, supportedExercises} from "@/lib/constants";
 import NoChartData from "@/components/NoChartData";
-
-const exerciseEnumToDisplayName: Record<string, string> = {
-    "BICEP CURL": "Bicep Curl",
-    "BENCH PRESS": "Bench Press",
-    "SQUAT": "Squat",
-}
 
 const monthIdxToDisplayName: Record<number, string> = {
     0: "Jan",

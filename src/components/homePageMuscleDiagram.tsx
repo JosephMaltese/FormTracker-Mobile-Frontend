@@ -24,7 +24,7 @@ export default function HomePageMuscleDiagram({ frontMusclesTrained, backMuscles
         ...totalBackMuscles.map((slug) => ({
             slug,
             styles: { fill: defaultBodyColorHex },
-        })),
+        } as ExtendedBodyPart)),
         ...backMusclesTrained,
     ];
 

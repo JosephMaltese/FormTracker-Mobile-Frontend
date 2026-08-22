@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import {SafeAreaProvider, SafeAreaView} from "react-native-safe-area-context";
-import {SelectedVideo, VideoAnalysis} from "@/lib/types";
+import {APIExercise, Exercise, SelectedVideo, VideoAnalysis} from "@/lib/types";
 import * as ImagePicker from "expo-image-picker";
 import VideoPreview from "@/components/VideoPreview";
 import {router} from "expo-router";
@@ -19,8 +19,6 @@ import supabase from "@/lib/subabaseClient";
 import {useAuthSession} from "@/providers/AuthProvider";
 import DumbbellSpinner from "@/components/dumbbellSpinner";
 
-type Exercise = "Bicep Curl" | "Bench Press" | "Squat";
-type APIExercise = "BICEP CURL" | "BENCH PRESS" | "SQUAT";
 
 const exerciseOptions: Exercise[] = [
     "Bicep Curl",

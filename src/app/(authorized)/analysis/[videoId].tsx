@@ -9,6 +9,14 @@ import Svg, {Circle} from "react-native-svg";
 import VideoPreview from "@/components/VideoPreview";
 import DumbbellSpinner from "@/components/dumbbellSpinner";
 import MuscleDiagram from "@/components/muscleDiagram";
+import {
+    exerciseEnumToDisplayName,
+    exerciseMuscles,
+    musclesBackOnly,
+    musclesBothSides,
+    musclesFrontOnly
+} from "@/lib/constants";
+import {ExtendedBodyPart} from "react-native-body-highlighter";
 
 const COLORS = {
     background: "#F8F7F4",
@@ -43,7 +51,7 @@ function ScoreRing({ score }: { score: number }) {
                     cy={size / 2}
                     r={radius}
                     fill="none"
-                    stroke={COLORS.blue}
+                    stroke="#5C5CFF"
                     strokeWidth={strokeWidth}
                     strokeDasharray={`${circumference} ${circumference}`}
                     strokeDashoffset={circumference * (1 - progress / 100)}
@@ -63,6 +71,8 @@ export default function AnalysisScreen() {
     const [analyzedVideoUrl, setAnalyzedVideoUrl] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+    const [frontMusclesHit, setFrontMusclesHit] = useState<ExtendedBodyPart[]>([]);
+    const [backMusclesHit, setBackMusclesHit] = useState<ExtendedBodyPart[]>([]);
 
     useEffect(() => {
         setLoading(true);
@@ -91,6 +101,44 @@ export default function AnalysisScreen() {
                 uploadedAt: video.uploaded_at,
                 userId: video.user_id,
             } as SummaryPageAnalysis);
+
+            const musclesHit = exerciseMuscles[video.exercise_type];
+            const primaryMuscles = musclesHit.primary;
+            const secondaryMuscles = musclesHit.secondary;
+
+            const frontPrimary = primaryMuscles.filter((muscle) => musclesFrontOnly.includes(muscle) || musclesBothSides.includes(muscle)).map((frontMuscle) => {
+                return {
+                    slug: frontMuscle,
+                    intensity: 3
+                } as ExtendedBodyPart;
+            });
+
+            const frontSecondary = secondaryMuscles.filter((muscle) => musclesFrontOnly.includes(muscle) || musclesBothSides.includes(muscle)).map((frontMuscle) => {
+                return {
+                    slug: frontMuscle,
+                    intensity: 1
+                } as ExtendedBodyPart;
+            });
+
+            const backPrimary = primaryMuscles.filter((muscle) => musclesBackOnly.includes(muscle) || musclesBothSides.includes(muscle)).map((backMuscle) => {
+                return {
+                    slug: backMuscle,
+                    intensity: 3
+                } as ExtendedBodyPart;
+            });
+
+            const backSecondary = secondaryMuscles.filter((muscle) => musclesBackOnly.includes(muscle) || musclesBothSides.includes(muscle)).map((backMuscle) => {
+                return {
+                    slug: backMuscle,
+                    intensity: 1
+                } as ExtendedBodyPart;
+            });
+
+            const totalFront = [...frontPrimary, ...frontSecondary];
+            const totalBack = [...backPrimary, ...backSecondary];
+
+            setFrontMusclesHit(totalFront);
+            setBackMusclesHit(totalBack);
 
             if (!video.file_url) {
                 console.error("Video has no storage path");
@@ -124,7 +172,7 @@ export default function AnalysisScreen() {
         return (
             <SafeAreaView style={[styles.page, styles.centered]}>
                 <Text style={styles.errorText}>{error ?? "Analysis not found."}</Text>
-                <TouchableOpacity onPress={() => router.back()} style={styles.retryButton}>
+                <TouchableOpacity onPress={() => router.dismissTo('/(authorized)/(tabs)')} style={styles.retryButton}>
                     <Text style={styles.retryText}>Go back</Text>
                 </TouchableOpacity>
             </SafeAreaView>
@@ -134,12 +182,12 @@ export default function AnalysisScreen() {
     return (
         <SafeAreaView style={styles.page} edges={["top"]}>
             <View style={styles.header}>
-                <TouchableOpacity onPress={() => router.back()} hitSlop={12} style={styles.headerButton}>
+                <TouchableOpacity onPress={() => router.dismissTo('/(authorized)/(tabs)')} hitSlop={12} style={styles.headerButton}>
                     <Ionicons name="arrow-back" size={27} color={COLORS.ink} />
                 </TouchableOpacity>
 
                 <View style={styles.headerTitleWrap}>
-                    <Text style={styles.headerTitle} numberOfLines={1}>{analysis.exerciseType}</Text>
+                    <Text style={styles.headerTitle} numberOfLines={1}>{exerciseEnumToDisplayName[analysis.exerciseType]} Performance</Text>
                     <Text style={styles.headerDate}>
                         {new Date(analysis?.uploadedAt ?? "").toLocaleDateString("en-US", {
                             month: "long",
@@ -196,15 +244,7 @@ export default function AnalysisScreen() {
                     </View>
                 </View>
 
-                <View style={styles.muscleCard}>
-                    <View style={styles.muscleCopy}>
-                        <Text style={styles.muscleTitle}>Primary Muscles Worked</Text>
-                        <Text style={styles.muscleDescription}>display.muscleSummary</Text>
-                    </View>
-                    <View style={styles.diagramWrap}>
-                        <MuscleDiagram frontMusclesTrained={[]} backMusclesTrained={[]} />
-                    </View>
-                </View>
+                <MuscleDiagram frontMusclesTrained={frontMusclesHit} backMusclesTrained={backMusclesHit} />
             </ScrollView>
         </SafeAreaView>
     );
@@ -225,9 +265,9 @@ const styles = StyleSheet.create({
     headerDate: { color: COLORS.muted, fontSize: 14, marginTop: 3 },
     content: { paddingHorizontal: 24, paddingBottom: 36, gap: 22 },
     videoCard: {
-        height: 210,
+        height: 340,
         overflow: "hidden",
-        borderRadius: 27,
+        borderRadius: 30,
         backgroundColor: "#DDE5EA",
     },
     videoFallback: { flex: 1 },
@@ -248,8 +288,8 @@ const styles = StyleSheet.create({
     scoreRing: { width: 82, height: 82, alignItems: "center", justifyContent: "center" },
     scoreNumber: { color: COLORS.ink, fontSize: 23, fontWeight: "800" },
     scoreCopy: { flex: 1, marginLeft: 18, alignItems: "flex-start" },
-    badge: { backgroundColor: "#DDF4FF", borderRadius: 7, paddingHorizontal: 8, paddingVertical: 4 },
-    badgeText: { color: COLORS.blue, fontSize: 11, fontWeight: "800", letterSpacing: 0.2 },
+    badge: { backgroundColor: "#B8B8FF", borderRadius: 7, paddingHorizontal: 8, paddingVertical: 4 },
+    badgeText: { color: "#5C5CFF", fontSize: 11, fontWeight: "800", letterSpacing: 0.2 },
     scoreTitle: { color: COLORS.ink, fontSize: 17, fontWeight: "700", marginTop: 7 },
     scoreSubtitle: { color: COLORS.muted, fontSize: 14, marginTop: 4 },
     feedbackCard: { paddingHorizontal: 17, paddingVertical: 19 },

@@ -40,4 +40,21 @@ type SummaryPageAnalysis = {
     userId: string;
 }
 
-export { GroupedScoreData, GroupedProgressChartProps, SelectedVideo, VideoAnalysis, RepAngleRange, SummaryPageAnalysis };
+type MusclesTrained = {
+    primary: string[];
+    secondary: string[];
+}
+
+type Exercise = "Bicep Curl" | "Bench Press" | "Squat";
+type APIExercise = "BICEP CURL" | "BENCH PRESS" | "SQUAT";
+
+export {
+    GroupedScoreData,
+    GroupedProgressChartProps,
+    SelectedVideo, VideoAnalysis,
+    RepAngleRange,
+    SummaryPageAnalysis,
+    Exercise,
+    APIExercise,
+    MusclesTrained,
+};

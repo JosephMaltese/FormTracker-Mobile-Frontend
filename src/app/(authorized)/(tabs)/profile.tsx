@@ -95,7 +95,7 @@ export default function ProfileScreen() {
                         <Ionicons
                             name="person"
                             size={45}
-                            color="#078ECC"
+                            color="#0000FF"
                         />
                     </View>
 
@@ -193,9 +193,9 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "center",
 
-        backgroundColor: "#E3F4FB",
+        backgroundColor: "#B8B8FF",
         borderWidth: 2,
-        borderColor: "#078ECC",
+        borderColor: "#0000FF",
         borderRadius: 41,
     },
 

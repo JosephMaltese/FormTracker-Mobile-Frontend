@@ -1,3 +1,5 @@
+import {APIExercise, Exercise, MusclesTrained} from "@/lib/types";
+
 const musclesFrontOnly = [
     "tibialis",
     "obliques",
@@ -6,14 +8,14 @@ const musclesFrontOnly = [
     "abs",
     "quadriceps",
     "knees"
-] as const;
+];
 const musclesBackOnly = [
     "adductors",
     "upper-back",
     "lower-back",
     "hamstring",
     "gluteal"
-] as const;
+];
 const musclesBothSides = [
     "trapezius",
     "triceps",
@@ -27,13 +29,34 @@ const musclesBothSides = [
     "feet",
     "head",
     "ankles"
-] as const;
+];
 
 const supportedExercises = [
     "BICEP CURL",
     "BENCH PRESS",
     "SQUAT"
 ];
+
+const exerciseEnumToDisplayName: Record<string, Exercise> = {
+    "BICEP CURL": "Bicep Curl",
+    "BENCH PRESS": "Bench Press",
+    "SQUAT": "Squat",
+}
+
+const exerciseMuscles: Record<string, MusclesTrained> = {
+    "BICEP CURL": {
+        primary: [],
+        secondary: []
+    },
+    "BENCH PRESS": {
+        primary: [],
+        secondary: []
+    },
+    "SQUAT": {
+        primary: ["quadriceps", "gluteal", "adductors"],
+        secondary: ["abs", "hamstring", "calves"]
+    }
+}
 
 const intensityColorsHex = ["#B8B8FF", "#5C5CFF", "#0000FF"];
 
@@ -59,4 +82,6 @@ export {
     progressChartPointColorHex,
     supportedExercises,
     apiURL,
+    exerciseEnumToDisplayName,
+    exerciseMuscles,
 };
